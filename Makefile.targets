@@ -1,0 +1,41 @@
+SHELL:=/bin/bash
+
+AWS_VALID_ACCOUNTS := sandbox
+AWS_957774660254_ACCOUNT := sandbox
+
+define setup_creds
+  $(eval AWS_ACCOUNT_ID := $(shell aws sts get-caller-identity --output text --query 'Account'))
+  $(eval account := $(AWS_$(AWS_ACCOUNT_ID)_ACCOUNT))
+  $(if $(filter $(account), $(AWS_VALID_ACCOUNTS)), $(info Account = $(account)) ,$(error You must log into AWS through get keys in order to run this operation))
+  $(eval AWS_CREDS := -e "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" -e "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" -e "AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" -e "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}")
+endef
+
+export test_stage = ${DEFAULT_STAGE_NAME}
+ifeq ($(stageName),)
+	stage ?= $(account)
+else
+	stage := $(stageName)
+endif
+
+.PHONY: lint
+lint:
+	pylint ./src
+
+.PHONY: test-unit
+test-unit:
+	py.test --color=yes --cov-report html --cov-report term --cov=src test/unit --cov-fail-under=80
+
+.PHONY: deploy
+deploy:
+	$(call setup_creds)
+	sls deploy -s ${stage} --account ${account}
+
+.PHONY: remove
+remove:
+	$(call setup_creds)
+	sls remove -s ${stage} --account ${account}
+
+.PHONY: dynamo-local-migrate
+dynamo-local-migrate:
+	$(call setup_creds)
+	sls dynamodb migrate -s ${test_stage} --account ${account} --port ${DYNAMO_PORT} --host ${DYNAMO_HOST}

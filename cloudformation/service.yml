@@ -1,0 +1,449 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Description: "Dragon API"
+
+
+#######################
+###
+###    PARAMETERS
+###
+#######################
+Parameters:
+  Environment:
+    Type: String
+    Default: sandbox
+    AllowedValues:
+      - sandbox
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+  DockerImageTag:
+    Type: String
+    Default: latest
+    Description: Version of ecr image to deploy
+  ServiceDesiredCount:
+    Type: String
+    Default: 1
+    Description: Number of ecs services to run
+  ProjectName:
+    Description: An aribitrary name you like that describes the project this service runs under
+    Type: String
+  ServiceName:
+    Description: An arbitrary name of this service
+    Type: String
+  ECRImageName:
+    Description: The name of the image in ecr that ECS should pull to run the service
+    Type: String
+  GitHubRepositoryOwner:
+    Type: String
+  GitHubRepositoryName:
+    Type: String
+  GitHubOAuthToken:
+    Type: String
+  ECSClusterName:
+    Description: You need to create the ECS cluster before creating this stack. Put the cluster name here
+    Type: String
+  HealthCheckPath:
+    Description: The endpoint on the service that should be used for the load balancer to check for service health. Ex. /api/ping
+    Type: String
+  ApplicationPort:
+    Description: The port your service runs on. Ex. 8080
+    Type: String
+  VPCStackName:
+    Description: The name of the vpc stack containing the roles, security groups, and vpc
+    Type: String
+
+
+
+#######################
+###
+###    MAPPINGS
+###
+#######################
+Mappings:
+
+  Environments:
+    sandbox:
+      ServiceMaximumTasks: 2
+      ServiceMinimumTasks: 1
+      HostedZone: dragon.run.
+      DomainCertificateArn: arn:aws:acm:us-west-2:181407128154:certificate/a8c0aba0-e58f-4dd3-a2c7-a32b0a72dc8d
+
+
+#######################
+###
+###    CONDITIONS
+###
+#######################
+# Conditions:
+
+
+#######################
+###
+###    METADATA
+###
+#######################
+# Metadata:
+
+
+#######################
+###
+###    RESOURCES
+###
+#######################
+Resources:
+
+  ##
+  ##  ECS Service
+  ##
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - HTTPSALBListener
+      - TargetGroup
+      - ALB
+      - TaskDef
+    Properties:
+      Cluster: !Ref ECSClusterName
+      DesiredCount: !Ref ServiceDesiredCount
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 250
+      LoadBalancers:
+        - ContainerName: !Sub "${ProjectName}_${ServiceName}"
+          ContainerPort: !Ref ApplicationPort
+          TargetGroupArn: !Ref TargetGroup
+      Role:
+        Fn::ImportValue: !Sub "${VPCStackName}-ECSServiceRole"
+      TaskDefinition: !Ref TaskDef
+      PlacementStrategies:
+        - Type: binpack
+          Field: memory
+
+
+  TaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      TaskRoleArn:
+        Fn::ImportValue: !Sub "${VPCStackName}-ECSTaskRole"
+      ContainerDefinitions:
+        - Name: !Ref ServiceName
+          Cpu: 512
+          Memory: 1024
+          Essential: true
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRImageName}:${DockerImageTag}"
+          PortMappings:
+            - ContainerPort: !Ref ApplicationPort
+
+  ##
+  ##  Load Balancer
+  ##
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internal
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '30'
+      Subnets:
+        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetC"
+      SecurityGroups:
+        - Ref: InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${ServiceName}-ALB"
+
+  HTTPSALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn:
+      - ALB
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref ALB
+      Port: '443'
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !FindInMap [ Environments, !Ref Environment, DomainCertificateArn ]
+
+  HTTPSALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DependsOn:
+      - HTTPSALBListener
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref TargetGroup
+      Conditions:
+      - Field: path-pattern
+        Values: [/]
+      ListenerArn: !Ref HTTPSALBListener
+      Priority: 1
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn:
+      - ALB
+    Properties:
+      Name: !Join
+        - '-'
+        - - 'TG1'
+          - !Select [ 2, !Split [ '-', !GetAtt ALB.LoadBalancerName]]
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: !Ref HealthCheckPath
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 3
+      HealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200'
+      Port: 443
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId:
+        Fn::ImportValue: !Sub "${VPCStackName}-VpcId"
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '60'
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${ServiceName}-TargetGroup"
+
+  ##
+  ##  DNS Records
+  ##
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    DependsOn: HTTPSALBListener
+    Properties:
+      HostedZoneName: !FindInMap [ Environments, !Ref Environment, HostedZone ]
+      Comment: !Sub "DNS name for the ${ServiceName} ALB"
+      Name: !Sub
+        - "${ServiceName}-${Environment}.${HostedZone}"
+        - {
+          ServiceName: !Ref ServiceName,
+          Environment: !Ref Environment,
+          HostedZone: !FindInMap [ Environments, !Ref Environment, HostedZone ]
+          }
+      Type: CNAME
+      TTL: "60"
+      ResourceRecords:
+        - !Join ['', [!GetAtt [ALB, DNSName]]]
+
+
+  ##
+  ##  Auto Scaling
+  ##
+  ServiceScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: ECSService
+    Properties:
+      MaxCapacity: !FindInMap [ Environments, !Ref Environment, ServiceMaximumTasks ]
+      MinCapacity: !FindInMap [ Environments, !Ref Environment, ServiceMinimumTasks ]
+      ResourceId: !Sub
+        - "service/${ClusterName}/${ServiceName}"
+        - {
+          ClusterName: !Ref ECSClusterName,
+          ServiceName: !GetAtt [ ECSService, Name ]
+          }
+      RoleARN:
+        Fn::ImportValue: !Sub "${VPCStackName}-AutoScalingRoleArn"
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
+  ScaleUpPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    DependsOn: ServiceScalingTarget
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-StepUpPolicy"
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref ServiceScalingTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: PercentChangeInCapacity
+        Cooldown: 60
+        MetricAggregationType: Maximum
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          MetricIntervalUpperBound: 5
+          ScalingAdjustment: 20
+        - MetricIntervalLowerBound: 5
+          MetricIntervalUpperBound: 10
+          ScalingAdjustment: 50
+        - MetricIntervalLowerBound: 10
+          ScalingAdjustment: 100
+
+  UsageAlarmScaleUp:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: ScaleUpPolicy
+    Properties:
+      EvaluationPeriods: '1'
+      Statistic: Maximum
+      Threshold: '80'
+      AlarmDescription: Alarm if our container consumes more than 80 percent of reserved CPU
+      Period: '60'
+      AlarmActions:
+        - !Ref ScaleUpPolicy
+      Namespace: AWS/ECS
+      Dimensions:
+        - Name: ClusterName
+          Value: !Ref ECSClusterName
+        - Name: ServiceName
+          Value: !GetAtt [ECSService, Name]
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: CPUUtilization
+
+  ScaleDownPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    DependsOn: ServiceScalingTarget
+    Properties:
+      PolicyName: !Sub ${AWS::StackName}-StepDownPolicy
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref ServiceScalingTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 180
+        MetricAggregationType: Maximum
+        StepAdjustments:
+          - MetricIntervalUpperBound: 0
+            ScalingAdjustment: -1
+
+  UsageAlarmScaleDown:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: ScaleDownPolicy
+    Properties:
+      EvaluationPeriods: '1'
+      Statistic: Average
+      Threshold: '60'
+      AlarmDescription: Alarm if our container consumes less than 60 percent of reserved CPU
+      Period: '60'
+      AlarmActions:
+        - !Ref ScaleDownPolicy
+      Namespace: AWS/ECS
+      Dimensions:
+        - Name: ClusterName
+          Value: !Ref ECSClusterName
+        - Name: ServiceName
+          Value: !GetAtt [ ECSService, Name ]
+      ComparisonOperator: LessThanThreshold
+      MetricName: CPUUtilization
+
+  ##
+  ##  Continuous Integration/Deployment
+  ##
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn: ArtifactStoreS3Bucket
+    Properties:
+      RoleArn:
+        Fn::ImportValue: !Sub "${VPCStackName}-CodePipelineRoleArn"
+      Stages:
+        -
+          Name: Source
+          Actions:
+            -
+              Name: SourceFromGithub
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                -
+                  Name: !Sub "${ServiceName}-Source"
+              Configuration:
+                Owner: !Ref GitHubRepositoryOwner
+                Repo: !Ref GitHubRepositoryName
+                PollForSourceChanges: true
+                Branch: !Sub "deploy-${Environment}"
+                OAuthToken: !Ref GitHubOAuthToken
+              RunOrder: 1
+        -
+          Name: Build
+          Actions:
+            -
+              Name: BuildSource
+              InputArtifacts:
+                -
+                  Name: !Sub "${ServiceName}-Source"
+              OutputArtifacts:
+                -
+                  Name: imagedefinitions
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              RunOrder: 1
+        -
+          Name: Deploy
+          Actions:
+            -
+              Name: DeployAction
+              InputArtifacts:
+                -
+                  Name: imagedefinitions
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: ECS
+              Configuration:
+                ClusterName: !Ref ECSClusterName
+                ServiceName: !GetAtt [ ECSService, Name ]
+                FileName: imagedefinitions.json
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactStoreS3Bucket
+
+  ArtifactStoreS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-${ServiceName}-pipeline-artifact-store"
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+
+  ##
+  ##  Code Build
+  ##
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      ServiceRole:
+        Fn::ImportValue: !Sub "${VPCStackName}-CodeBuildRole"
+      Artifacts:
+        Type: CODEPIPELINE
+      BadgeEnabled: 'false'
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/docker:17.09.0
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yml
+      TimeoutInMinutes: 10
+      VpcConfig:
+        VpcId:
+          Fn::ImportValue: !Sub "${VPCStackName}-VpcId"
+        Subnets:
+          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
+          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
+          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetC"
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub "${VPCStackName}-InternalSG"
+
+
+#######################
+###
+###    OUTPUTS
+###
+#######################
+Outputs:
+  ServiceUrl:
+    Description: The url of the service
+    Value: !Ref DNSRecord

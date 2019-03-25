@@ -1,0 +1,4 @@
+[run]
+omit =
+    # omit files not needed for coverage
+    src/common/codes.py

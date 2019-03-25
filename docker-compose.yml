@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+
+  ##
+  ##  Warehouse
+  ##
+  api:
+    build:
+      context: .
+    image: dragon-api
+    env_file: .env
+    restart: always
+    volumes:
+      - .:/usr/src/dragon
+      - ~/.aws:/home/app/.aws
+    ports:
+      - "8090:5000"
+    command: python src/api.py
+    healthcheck:
+      test: curl --fail http://localhost:5000/api/v1/ping || exit 1
+    links:
+      - dynamo:dynamo
+    depends_on:
+      - dynamo
+
+
+  ##
+  ##  Database
+  ##
+  dynamo:
+    image: tutum/dynamodb:latest
+    ports:
+      - "8000:8000"
+    hostname: dynamodb
+
+
+  # dynamo_init:
+  #   depends_on:
+  #     - dynamo
+  #   links:
+  #     - dynamo:dynamo
+  #   image: dragon-api
+  #   volumes:
+  #     - .:/code
+  #   command: python -u /usr/src/dragon/db/create_tables.py
+  #   restart: no
+  #   networks:
+  #     - dragonnet
+
+# networks:
+#   dragonnet:
+#     driver: "bridge"
