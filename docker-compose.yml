@@ -12,10 +12,10 @@ services:
     env_file: .env
     restart: always
     volumes:
-      - .:/usr/src/dragon
+      - .:/usr/src/dragon-api
       - ~/.aws:/home/app/.aws
     ports:
-      - "8090:5000"
+      - "5000:5000"
     command: python src/api.py
     healthcheck:
       test: curl --fail http://localhost:5000/api/v1/ping || exit 1
@@ -42,8 +42,8 @@ services:
   #     - dynamo:dynamo
   #   image: dragon-api
   #   volumes:
-  #     - .:/code
-  #   command: python -u /usr/src/dragon/db/create_tables.py
+  #     - .:/usr/src/dragon-api
+  #   command: make dynamo-setup
   #   restart: no
   #   networks:
   #     - dragonnet

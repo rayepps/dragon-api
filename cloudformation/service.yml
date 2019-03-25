@@ -15,8 +15,6 @@ Parameters:
     Default: sandbox
     AllowedValues:
       - sandbox
-  InstanceSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
   DockerImageTag:
     Type: String
     Default: latest
@@ -50,7 +48,10 @@ Parameters:
     Description: The port your service runs on. Ex. 8080
     Type: String
   VPCStackName:
-    Description: The name of the vpc stack containing the roles, security groups, and vpc
+    Description: The name of the vpc stack containing the vpc
+    Type: String
+  GRPStackName:
+    Description: The name of the grp stack containing the roles, policies, and security groups
     Type: String
 
 
@@ -66,8 +67,8 @@ Mappings:
     sandbox:
       ServiceMaximumTasks: 2
       ServiceMinimumTasks: 1
-      HostedZone: dragon.run.
-      DomainCertificateArn: arn:aws:acm:us-west-2:181407128154:certificate/a8c0aba0-e58f-4dd3-a2c7-a32b0a72dc8d
+      HostedZone: thedragon.photo.
+      DomainCertificateArn: arn:aws:acm:us-west-2:957774660254:certificate/bac4265c-70a1-4116-9644-714c4565fd28
 
 
 #######################
@@ -114,7 +115,7 @@ Resources:
           ContainerPort: !Ref ApplicationPort
           TargetGroupArn: !Ref TargetGroup
       Role:
-        Fn::ImportValue: !Sub "${VPCStackName}-ECSServiceRole"
+        Fn::ImportValue: !Sub "${GRPStackName}-ECSServiceRole"
       TaskDefinition: !Ref TaskDef
       PlacementStrategies:
         - Type: binpack
@@ -125,15 +126,20 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       TaskRoleArn:
-        Fn::ImportValue: !Sub "${VPCStackName}-ECSTaskRole"
+        Fn::ImportValue: !Sub "${GRPStackName}-ECSTaskRole"
       ContainerDefinitions:
-        - Name: !Ref ServiceName
+        - Name: !Sub "${ProjectName}_${ServiceName}"
           Cpu: 512
           Memory: 1024
           Essential: true
           Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRImageName}:${DockerImageTag}"
           PortMappings:
             - ContainerPort: !Ref ApplicationPort
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-group: !Sub "/${ProjectName}/ecs/${ServiceName}"
 
   ##
   ##  Load Balancer
@@ -141,16 +147,17 @@ Resources:
   ALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Scheme: internal
+      Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
           Value: '30'
       Subnets:
-        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
-        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
-        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetC"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetC"
       SecurityGroups:
-        - Ref: InstanceSecurityGroup
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSG"
+        - Fn::ImportValue: !Sub "${VPCStackName}-InternalSG"
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-${ServiceName}-ALB"
@@ -249,7 +256,7 @@ Resources:
           ServiceName: !GetAtt [ ECSService, Name ]
           }
       RoleARN:
-        Fn::ImportValue: !Sub "${VPCStackName}-AutoScalingRoleArn"
+        Fn::ImportValue: !Sub "${GRPStackName}-AutoScalingRoleArn"
       ScalableDimension: ecs:service:DesiredCount
       ServiceNamespace: ecs
 
@@ -337,7 +344,7 @@ Resources:
     DependsOn: ArtifactStoreS3Bucket
     Properties:
       RoleArn:
-        Fn::ImportValue: !Sub "${VPCStackName}-CodePipelineRoleArn"
+        Fn::ImportValue: !Sub "${GRPStackName}-CodePipelineRoleArn"
       Stages:
         -
           Name: Source
@@ -415,7 +422,7 @@ Resources:
     Type: AWS::CodeBuild::Project
     Properties:
       ServiceRole:
-        Fn::ImportValue: !Sub "${VPCStackName}-CodeBuildRole"
+        Fn::ImportValue: !Sub "${GRPStackName}-CodeBuildRole"
       Artifacts:
         Type: CODEPIPELINE
       BadgeEnabled: 'false'

@@ -1,0 +1,324 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Description: "Role and Group Dependencies: code deploy/build/pipeline/etc"
+
+
+#######################
+###
+###    MAPPINGS
+###
+#######################
+# Mappings:
+
+
+#######################
+###
+###    PARAMETERS
+###
+#######################
+# Parameters:
+
+
+#######################
+###
+###    CONDITIONS
+###
+#######################
+# Conditions:
+
+
+#######################
+###
+###    METADATA
+###
+#######################
+# Metadata:
+
+
+#######################
+###
+###    RESOURCES
+###
+#######################
+Resources:
+
+  CloudFormationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [cloudformation.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CodeFormationAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: '*'
+                Effect: Allow
+                Resource: '*'
+
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [ecs.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: ECSServiceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: '*'
+                Effect: Allow
+                Resource: '*'
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        -
+          Ref: EC2InstanceRole
+
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [ec2.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: EC2InstanceAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: '*'
+                Effect: Allow
+                Resource: '*'
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [codebuild.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CodeBuildAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: '*'
+                Effect: Allow
+                Resource: '*'
+
+  CodeDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [codedeploy.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CodeDeployAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: '*'
+                Effect: Allow
+                Resource: '*'
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [codepipeline.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CodePipelineAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: '*'
+                Effect: Allow
+                Resource: '*'
+
+  AutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [autoscaling.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: AutoScalingAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: '*'
+                Effect: Allow
+                Resource: '*'
+
+  TaskSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [events.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: AutoScalingAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: '*'
+                Effect: Allow
+                Resource: '*'
+
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs-tasks.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: ECSTaskAccess
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
+              - elasticloadbalancing:DeregisterTargets
+              - elasticloadbalancing:Describe*
+              - elasticloadbalancing:RegisterInstancesWithLoadBalancer
+              - elasticloadbalancing:RegisterTargets
+              - ec2:Describe*
+              - ec2:AuthorizeSecurityGroupIngress
+              - SNS:CreateTopic
+              - SNS:DeleteTopic
+              - SNS:Subscribe
+              - SNS:Publish
+            Resource: '*'
+
+
+#######################
+###
+###    OUTPUTS
+###
+#######################
+Outputs:
+  CloudFormationRole:
+    Description: Role for cloud formation
+    Value: !Ref CloudFormationRole
+    Export:
+      Name: !Sub ${AWS::StackName}-CloudFormationRole
+  CodePipelineRole:
+    Description: Role for code pipelines
+    Value: !Ref CodePipelineRole
+    Export:
+      Name: !Sub ${AWS::StackName}-CodePipelineRole
+  CodePipelineRoleArn:
+    Description: Role arn for code pipelines
+    Value: !GetAtt [CodePipelineRole, Arn]
+    Export:
+      Name: !Sub ${AWS::StackName}-CodePipelineRoleArn
+  CodeBuildRole:
+    Description: Role for code build
+    Value: !Ref CodeBuildRole
+    Export:
+      Name: !Sub ${AWS::StackName}-CodeBuildRole
+  CodeDeployRole:
+    Description: Role for code deploy
+    Value: !Ref CodeDeployRole
+    Export:
+      Name: !Sub ${AWS::StackName}-CodeDeployRole
+  ECSTaskRole:
+    Description: Role for ecs tasks
+    Value: !Ref ECSTaskRole
+    Export:
+      Name: !Sub ${AWS::StackName}-ECSTaskRole
+  ECSServiceRole:
+    Description: Role for ecs services
+    Value: !Ref ECSServiceRole
+    Export:
+      Name: !Sub ${AWS::StackName}-ECSServiceRole
+  AutoScalingRole:
+    Description: Role for ecs auto scaling
+    Value: !Ref AutoScalingRole
+    Export:
+      Name: !Sub ${AWS::StackName}-AutoScalingRole
+  AutoScalingRoleArn:
+    Description: Role Arn for ecs auto scaling
+    Value: !GetAtt [AutoScalingRole, Arn]
+    Export:
+      Name: !Sub ${AWS::StackName}-AutoScalingRoleArn
+  EC2InstanceRole:
+    Description: Role for ec2 instances
+    Value: !Ref EC2InstanceRole
+    Export:
+      Name: !Sub ${AWS::StackName}-EC2InstanceRole
+  EC2InstanceRoleArn:
+    Description: Role arn for ec2 instances
+    Value: !GetAtt [EC2InstanceRole, Arn]
+    Export:
+      Name: !Sub ${AWS::StackName}-EC2InstanceRoleArn
+  EC2InstanceProfile:
+    Description: EC2 Instance profile
+    Value: !Ref EC2InstanceProfile
+    Export:
+      Name: !Sub ${AWS::StackName}-EC2InstanceProfile
+  EC2InstanceProfileArn:
+    Description: EC2 Instance profile
+    Value: !GetAtt [EC2InstanceProfile, Arn]
+    Export:
+      Name: !Sub ${AWS::StackName}-EC2InstanceProfileArn
+  TaskSchedulerRole:
+    Description: ECS task scheduling role
+    Value: !Ref TaskSchedulerRole
+    Export:
+      Name: !Sub ${AWS::StackName}-TaskSchedulerRole
+  TaskSchedulerRoleArn:
+    Description: ECS task scheduling role arn
+    Value: !GetAtt [TaskSchedulerRole, Arn]
+    Export:
+      Name: !Sub ${AWS::StackName}-TaskSchedulerRoleArn

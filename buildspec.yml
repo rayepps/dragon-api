@@ -9,11 +9,11 @@ phases:
       - $(aws ecr get-login --no-include-email --region us-west-2)
   build:
     commands:
-      - docker build -t dragon-api:$(cat ./version.cfg) .
-      - docker tag dragon-api:$(cat ./version.cfg) 957774660254.dkr.ecr.us-west-2.amazonaws.com/dragon-api:$(cat ./version.cfg)
+      - make build
   post_build:
     commands:
-      - docker push 957774660254.dkr.ecr.us-west-2.amazonaws.com/dragon-api:$(cat ./version.cfg)
+      - make tag
+      - make push
       - printf '[{"name":"dragon-api","imageUri":"%s"}]' 957774660254.dkr.ecr.us-west-2.amazonaws.com/dragon-api:$(cat ./version.cfg) > imagedefinitions.json
 artifacts:
     files: imagedefinitions.json
