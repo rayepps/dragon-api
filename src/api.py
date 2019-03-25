@@ -1,17 +1,19 @@
 
-from flask import Flask
 
+from src.flask_dragon.api import FlaskDragon
+from src.common import middleware
 from src.common.config import Config
 from src.endpoints.upload import upload
 from src.endpoints.ping import ping
 
 Config.setup()
 
-api = Flask(__name__)
+api = FlaskDragon("dragon-api")
 
-api.route('/api/ping', methods=['GET'])(ping)
-api.route('/api/v1/upload', methods=['POST'])(upload)
+api.middleware.add(middleware.catch_errors)
 
+api.get('/api/ping', ping)
+api.post('/api/v1/upload', upload)
 
 
 if __name__ == '__main__':

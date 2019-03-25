@@ -13,12 +13,12 @@ services:
     restart: always
     volumes:
       - .:/usr/src/dragon-api
-      - ~/.aws:/home/app/.aws
+      - ~/.aws:/root/.aws
     ports:
       - "5000:5000"
-    command: python src/api.py
+    command: python -u src/api.py
     healthcheck:
-      test: curl --fail http://localhost:5000/api/v1/ping || exit 1
+      test: curl --fail http://localhost:5000/api/ping || exit 1
     links:
       - dynamo:dynamo
     depends_on:

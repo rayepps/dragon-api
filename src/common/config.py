@@ -6,6 +6,8 @@
 class Config:
 
     version = 'unknown'
+    upload_folder = '/tmp'
+    s3_bucket_name = 'dragon-photo-storage'
 
     @classmethod
     def setup(cls):
