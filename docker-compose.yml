@@ -32,22 +32,17 @@ services:
     image: tutum/dynamodb:latest
     ports:
       - "8000:8000"
-    hostname: dynamodb
+    hostname: dynamo
 
-
-  # dynamo_init:
-  #   depends_on:
-  #     - dynamo
-  #   links:
-  #     - dynamo:dynamo
-  #   image: dragon-api
-  #   volumes:
-  #     - .:/usr/src/dragon-api
-  #   command: make dynamo-setup
-  #   restart: no
-  #   networks:
-  #     - dragonnet
-
-# networks:
-#   dragonnet:
-#     driver: "bridge"
+  dynamo_init:
+    env_file: .env
+    depends_on:
+      - dynamo
+    links:
+      - dynamo:dynamo
+    image: dragon-api
+    volumes:
+      - .:/usr/src/dragon-api
+      - ~/.aws:/root/.aws
+    command: make -f Makefile.targets dynamo-setup
+    restart: 'no'

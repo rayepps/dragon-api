@@ -15,8 +15,8 @@ export AWS_SESSION_TOKEN = ${TOKEN}
 export AWS_DEFAULT_REGION = ${REGION}
 export IMAGE_VERSION = ${VERSION}
 
-.PHONY: lint test-unit dynamo-setup
-lint test-unit dynamo-setup:
+.PHONY: lint test-unit
+lint test-unit:
 	docker-compose run --rm api make -f Makefile.targets $(MAKECMDGOALS) $(MAKEFLAGS)
 
 .PHONY: login

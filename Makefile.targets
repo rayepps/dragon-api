@@ -10,4 +10,4 @@ test-unit:
 
 .PHONY: dynamo-setup
 dynamo-setup:
-	python -u /usr/src/dragon/db/create_tables.py
+	python -u /usr/src/dragon-api/src/util/setup_dynamo.py
