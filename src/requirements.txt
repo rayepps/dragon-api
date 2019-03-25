@@ -2,4 +2,5 @@ pydash
 pyyaml==3.13
 boto3==1.9.120
 Flask==1.0.2
+Flask-API==1.1
 awscli==1.16.130

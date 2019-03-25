@@ -1,28 +1,31 @@
-import os
 
 from flask import request
-from werkzeug.utils import secure_filename
 
 from src.common.config import Config
 from src.common import standard
-from src.common import validation
 from src.common import exceptions
+
+from src.dal.model.photo import Photo
 
 from src.aws.s3_service import S3Service
 
 
 def upload():
 
-    if 'photo' not in request.files:
+    photo_file = request.files.get('photo', None)
+
+    if photo_file is None:
         raise exceptions.missing_parameter('photo')
 
-    photo = request.files['photo']
+    s3_url = S3Service.upload_file(photo_file)
 
-    if not validation.validate_file_type(photo.filename):
-        raise exceptions.invalid_file_type(photo.filename)
+    photo = Photo(dict(
+        title=request.form.get('title', ''),
+        filename=photo_file.filename,
+        description=request.form.get('description', ''),
+        photo_url=s3_url
+    ))
 
-    S3Service.upload_file(photo)
+    photo.save()
 
-    # TODO: add to dynamo
-
-    return standard.response(message="Successfully uploaded photo")
+    return standard.response(response=photo, message="Successfully uploaded photo")
