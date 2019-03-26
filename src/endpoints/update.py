@@ -4,7 +4,7 @@ from flask import request
 from src.common.config import Config
 from src.common import standard
 
-from src.dal.model.photo import Photo
+from src.model.photo import Photo
 
 from src.aws.s3_service import S3Service
 

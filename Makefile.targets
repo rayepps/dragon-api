@@ -11,3 +11,7 @@ test-unit:
 .PHONY: dynamo-setup
 dynamo-setup:
 	python -u /usr/src/dragon-api/src/util/setup_dynamo.py
+
+.PHONY: s3-setup
+s3-setup:
+	python -u /usr/src/dragon-api/src/util/setup_s3.py

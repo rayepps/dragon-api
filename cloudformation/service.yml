@@ -53,6 +53,9 @@ Parameters:
   GRPStackName:
     Description: The name of the grp stack containing the roles, policies, and security groups
     Type: String
+  ApiKey:
+    Description: A super secret api key to semi-secure the service
+    Type: String
 
 
 
@@ -135,6 +138,9 @@ Resources:
           Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRImageName}:${DockerImageTag}"
           PortMappings:
             - ContainerPort: !Ref ApplicationPort
+          Environment:
+            - Name: API_KEY
+              Value: !Ref ApiKey
           LogConfiguration:
             LogDriver: awslogs
             Options:

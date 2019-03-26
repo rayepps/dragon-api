@@ -5,11 +5,10 @@ from os import environ as env
 class Config:
 
     version = 'unknown'
-    upload_folder = '/tmp'
-    s3_bucket_name = 'dragon-photo-storage'
-    dynamo_host = env.get('DYNAMO_HOST')
-    dynamo_port = env.get('DYNAMO_PORT')
+    dynamo_url = env.get('DYNAMO_URL')
+    s3_url = env.get('S3_URL')
     exec_env = env.get('EXEC_ENV')
+    api_key = env.get('API_KEY')
 
     @classmethod
     def setup(cls):

@@ -1,7 +1,7 @@
 
 import uuid
 
-from src.dal.dynamo import get_dynamo
+from src.aws.dynamo import get_dynamo
 from src.common.config import Config
 from src.common.types import JsonSerializable
 
@@ -75,9 +75,6 @@ class Photo(JsonSerializable):
             Key={
                 'photo_id': self.store['photo_id']
             })
-
-        print('DELETE RESPONSE')
-        print(response)
 
         return response
 

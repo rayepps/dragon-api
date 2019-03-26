@@ -1,7 +1,8 @@
 
-
 from src.flask_dragon.api import FlaskDragon
-from src.common import middleware
+
+from src.common.middleware.authorize import authorize
+from src.common.middleware.catch_errors import catch_errors
 from src.common.config import Config
 
 from src.endpoints.upload import upload
@@ -15,9 +16,19 @@ Config.setup()
 
 api = FlaskDragon("dragon-api")
 
-api.middleware.add(middleware.catch_errors)
+# Order matters here
 
+# Add the error catching middleware before
+# anything else so all else gets caught
+api.middleware.add(catch_errors)
+
+# Add the ping handler
 api.get('/api/ping', ping)
+
+# Add the authorize middleware - this will
+# apply to everything we add to come
+api.middleware.add(authorize)
+
 api.post('/api/v1/photos', upload)
 api.get('/api/v1/photos', list_all)
 api.put('/api/v1/photos/<string:id>', update)

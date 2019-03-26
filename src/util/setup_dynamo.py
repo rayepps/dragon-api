@@ -1,8 +1,8 @@
 
-from src.dal.dynamo import get_dynamo
+from src.aws.dynamo import get_dynamo
 from src.common.config import Config
 
-from src.dal.model.photo import Photo
+from src.model.photo import Photo
 
 
 if __name__ == '__main__':

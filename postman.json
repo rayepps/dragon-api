@@ -1,0 +1,178 @@
+{
+	"info": {
+		"_postman_id": "64653b82-069f-4030-a552-58c50170c742",
+		"name": "Dragon",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/api/v1/photos",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"photos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Find",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/api/v1/photos/f7f630753cbe4cc2be38c86c2211ef90",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"photos",
+						"f7f630753cbe4cc2be38c86c2211ef90"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/api/v1/photos/7abde496e2c941aa96db83d04612e699",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"photos",
+						"7abde496e2c941aa96db83d04612e699"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "title",
+							"value": "Bye caly",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/api/v1/photos/f7f630753cbe4cc2be38c86c2211ef90",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"photos",
+						"f7f630753cbe4cc2be38c86c2211ef90"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "photo",
+							"type": "file",
+							"src": ""
+						},
+						{
+							"key": "title",
+							"value": "My profile pic",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "The best profile pic that ever was",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/api/v1/photos",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"photos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/api/ping",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

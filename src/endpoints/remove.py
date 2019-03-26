@@ -2,7 +2,7 @@
 from src.common import standard
 from src.aws.s3_service import S3Service
 
-from src.dal.model.photo import Photo
+from src.model.photo import Photo
 
 
 def remove(id):

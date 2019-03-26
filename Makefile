@@ -19,10 +19,6 @@ export IMAGE_VERSION = ${VERSION}
 lint test-unit:
 	docker-compose run --rm api make -f Makefile.targets $(MAKECMDGOALS) $(MAKEFLAGS)
 
-.PHONY: login
-login:
-	$(aws ecr get-login --no-include-email --region us-west-2)
-
 .PHONY: build
 build:
 	docker build -t dragon-api:${IMAGE_VERSION} .
@@ -32,5 +28,5 @@ tag:
 	docker tag dragon-api:${IMAGE_VERSION} ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/dragon-api:${IMAGE_VERSION}
 
 .PHONY: push
-push: login
+push:
 	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/dragon-api:${IMAGE_VERSION}

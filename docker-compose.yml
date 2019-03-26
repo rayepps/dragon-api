@@ -20,29 +20,43 @@ services:
     healthcheck:
       test: curl --fail http://localhost:5000/api/ping || exit 1
     links:
-      - dynamo:dynamo
+      - localstack:localstack
     depends_on:
-      - dynamo
-
+      - localstack
 
   ##
-  ##  Database
+  ##  AWS Local Stack
   ##
-  dynamo:
-    image: tutum/dynamodb:latest
+  localstack:
+    image: localstack/localstack
     ports:
-      - "8000:8000"
-    hostname: dynamo
+      - "4569:4569"
+      - "4572:4572"
+    environment:
+      - SERVICES=s3,dynamodb
 
   dynamo_init:
     env_file: .env
     depends_on:
-      - dynamo
+      - localstack
     links:
-      - dynamo:dynamo
+      - localstack:localstack
     image: dragon-api
     volumes:
       - .:/usr/src/dragon-api
       - ~/.aws:/root/.aws
     command: make -f Makefile.targets dynamo-setup
+    restart: 'no'
+
+  s3_init:
+    env_file: .env
+    depends_on:
+      - localstack
+    links:
+      - localstack:localstack
+    image: dragon-api
+    volumes:
+      - .:/usr/src/dragon-api
+      - ~/.aws:/root/.aws
+    command: make -f Makefile.targets s3-setup
     restart: 'no'

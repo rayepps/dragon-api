@@ -1,7 +1,7 @@
 
 from src.common import standard
 
-from src.dal.model.photo import Photo
+from src.model.photo import Photo
 
 
 def list_all():
