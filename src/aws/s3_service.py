@@ -26,9 +26,14 @@ class S3Service:
 
         s3.put_object(Body=file.read(), Bucket=Config.s3_bucket_name, Key=filename)
 
-        return f'{s3.meta.endpoint_url}/{Config.s3_bucket_name}/{filename}'
+        full_size_photo_url = f'{s3.meta.endpoint_url}/{Config.s3_bucket_name}/{filename}'
+        thumbnail_photo_url = full_size_photo_url
+
+        return full_size_photo_url, thumbnail_photo_url
 
     @classmethod
     def remove_file(cls, filename):
         s3 = boto3.resource('s3')
+        print('### FILENAME')
+        print(filename)
         s3.Object(Config.s3_bucket_name, filename).delete()

@@ -7,9 +7,9 @@ from src.dal.model.photo import Photo
 
 def remove(id):
 
-    photo = Photo(dict(photo_id=id))
+    photo = Photo.find(id)
 
-    S3Service.remove_file(photo.obj['filename'])
+    S3Service.remove_file(photo.store['filename'])
 
     photo.delete()
 

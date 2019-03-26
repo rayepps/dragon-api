@@ -30,10 +30,10 @@ class Photo(JsonSerializable):
         store = dict(
             photo_id = data.get('photo_id', uuid.uuid4().hex),
             filename = data.get('filename'),
-            title = data.get('title', ''),
+            title = data.get('title'),
             photo_url = data.get('photo_url'),
-            description = data.get('description', ''),
-            thumbnail_url = data.get('thumbnail_url', ''))
+            description = data.get('description'),
+            thumbnail_url = data.get('thumbnail_url'))
         super().__init__(store)
 
     @classmethod
@@ -50,7 +50,9 @@ class Photo(JsonSerializable):
 
         res = Photo.table().put_item(Item=data)
 
-    def update(self):
+    def patch(self, patch_obj):
+
+        patch_else_store = lambda prop: patch_obj[prop] if prop in patch_obj else self.store[prop]
 
         response = Photo.table().update_item(
             Key={
@@ -58,18 +60,15 @@ class Photo(JsonSerializable):
             },
             UpdateExpression="set title = :t, description = :d, photo_url = :p, thumbnail_url = :n, filename = :f",
             ExpressionAttributeValues={
-                ':t': self.store['title'],
-                ':d': self.store['description'],
-                ':p': self.store['photo_url'],
-                ':n': self.store['thumbnail_url'],
-                ':f': self.store['filename']
+                ':t': patch_else_store('title'),
+                ':d': patch_else_store('description'),
+                ':p': patch_else_store('photo_url'),
+                ':n': patch_else_store('thumbnail_url'),
+                ':f': patch_else_store('filename')
             },
             ReturnValues="UPDATED_NEW")
 
-        print('UPDATE RESPONSE')
-        print(response)
-
-        return response
+        return Photo(response['Attributes'])
 
     def delete(self):
         response = Photo.table().delete_item(
@@ -89,16 +88,10 @@ class Photo(JsonSerializable):
                 'photo_id': id
             })
 
-        print('FIND RESPONSE')
-        print(response)
-
-        return response
+        return Photo(response['Item'])
 
     @classmethod
     def get_all(cls):
         response = Photo.table().scan()
 
-        print('GET_ALL RESPONSE')
-        print(response)
-
-        return response
+        return [Photo(item) for item in response['Items']]
