@@ -1,5 +1,5 @@
 pydash
-pyyaml==3.13
+pyyaml>=4.2b1
 boto3==1.9.120
 Flask==1.0.2
 Flask-API==1.1
