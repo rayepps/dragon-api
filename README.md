@@ -5,15 +5,15 @@ Api can currently be hit at `https://api-sandbox.thedragon.photo`. Contact me to
 
 ### TODO
 
-[] Setup integration tests :(
-[] Actually write out all the unit tests :(
-[] Please the gods of lint
-[] Add helpful log lines
-[] Add parameter validation for data posted in upload and update forms
-[] Handle s3 and dynamo changes as a single transaction and roll one back when another fails so that the file storage is never out of sync with the database
-[] Treat thumbnails like actual thumbnails and resize them and store as a second image
-[] Add nginx (or some other gateway interface) so were not working off of the flask devlopment server
-[] Add Travis build step that verifies the `version.cfg` has been incremented and implements semvar
+- [] Setup integration tests :(
+- [] Actually write out all the unit tests :(
+- [] Please the gods of lint
+- [] Add helpful log lines
+- [] Add parameter validation for data posted in upload and update forms
+- [] Handle s3 and dynamo changes as a single transaction and roll one back when another fails so that the file storage is never out of sync with the database
+- [] Treat thumbnails like actual thumbnails and resize them and store as a second image
+- [] Add nginx (or some other gateway interface) so were not working off of the flask devlopment server
+- [] Add Travis build step that verifies the `version.cfg` has been incremented and implements semvar
 
 ### Running The Project Locally
 The project uses Docker to build and run locally. So long as you have the dependencies installed (Docker and Docker Compose) you should simply need to run:
