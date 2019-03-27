@@ -13,4 +13,6 @@ ENV PYTHONPATH "${PYTHONPATH}:/usr/src/dragon-api"
 
 ADD . .
 
+RUN chmod +x tools.sh
+
 CMD [ "python", "/usr/src/dragon-api/src/api.py" ]

@@ -1,0 +1,8 @@
+
+DockerImageTag: latest
+ECRImageName: dragon-api
+ECSClusterName: dragon-sandbox
+GRPStackName: dragon-groups-roles
+ProjectName: dragon
+ServiceName: api
+VPCStackName: dragon-vpc

@@ -10,19 +10,10 @@ Description: "Dragon API"
 ###
 #######################
 Parameters:
-  Environment:
-    Type: String
-    Default: sandbox
-    AllowedValues:
-      - sandbox
   DockerImageTag:
     Type: String
     Default: latest
     Description: Version of ecr image to deploy
-  ServiceDesiredCount:
-    Type: String
-    Default: 1
-    Description: Number of ecs services to run
   ProjectName:
     Description: An aribitrary name you like that describes the project this service runs under
     Type: String
@@ -32,29 +23,14 @@ Parameters:
   ECRImageName:
     Description: The name of the image in ecr that ECS should pull to run the service
     Type: String
-  GitHubRepositoryOwner:
-    Type: String
-  GitHubRepositoryName:
-    Type: String
-  GitHubOAuthToken:
-    Type: String
   ECSClusterName:
     Description: You need to create the ECS cluster before creating this stack. Put the cluster name here
-    Type: String
-  HealthCheckPath:
-    Description: The endpoint on the service that should be used for the load balancer to check for service health. Ex. /api/ping
-    Type: String
-  ApplicationPort:
-    Description: The port your service runs on. Ex. 8080
     Type: String
   VPCStackName:
     Description: The name of the vpc stack containing the vpc
     Type: String
   GRPStackName:
     Description: The name of the grp stack containing the roles, policies, and security groups
-    Type: String
-  ApiKey:
-    Description: A super secret api key to semi-secure the service
     Type: String
 
 
@@ -64,14 +40,7 @@ Parameters:
 ###    MAPPINGS
 ###
 #######################
-Mappings:
-
-  Environments:
-    sandbox:
-      ServiceMaximumTasks: 2
-      ServiceMinimumTasks: 1
-      HostedZone: thedragon.photo.
-      DomainCertificateArn: arn:aws:acm:us-west-2:957774660254:certificate/bac4265c-70a1-4116-9644-714c4565fd28
+# Mappings:
 
 
 #######################
@@ -109,13 +78,13 @@ Resources:
       - TaskDef
     Properties:
       Cluster: !Ref ECSClusterName
-      DesiredCount: !Ref ServiceDesiredCount
+      DesiredCount: 1
       DeploymentConfiguration:
         MinimumHealthyPercent: 100
         MaximumPercent: 250
       LoadBalancers:
-        - ContainerName: !Sub "${ProjectName}_${ServiceName}"
-          ContainerPort: !Ref ApplicationPort
+        - ContainerName: dragon-api
+          ContainerPort: 5000
           TargetGroupArn: !Ref TargetGroup
       Role:
         Fn::ImportValue: !Sub "${GRPStackName}-ECSServiceRole"
@@ -131,21 +100,24 @@ Resources:
       TaskRoleArn:
         Fn::ImportValue: !Sub "${GRPStackName}-ECSTaskRole"
       ContainerDefinitions:
-        - Name: !Sub "${ProjectName}_${ServiceName}"
+        - Name: dragon-api
           Cpu: 512
           Memory: 1024
           Essential: true
           Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRImageName}:${DockerImageTag}"
           PortMappings:
-            - ContainerPort: !Ref ApplicationPort
-          Environment:
-            - Name: API_KEY
-              Value: !Ref ApiKey
+            - ContainerPort: 5000
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-region: !Ref "AWS::Region"
-              awslogs-group: !Sub "/${ProjectName}/ecs/${ServiceName}"
+              awslogs-group: !Sub "/${ProjectName}/${ServiceName}/${AWS::StackName}"
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/${ProjectName}/${ServiceName}/${AWS::StackName}"
+      RetentionInDays: 7
 
   ##
   ##  Load Balancer
@@ -180,7 +152,7 @@ Resources:
       Port: '443'
       Protocol: HTTPS
       Certificates:
-        - CertificateArn: !FindInMap [ Environments, !Ref Environment, DomainCertificateArn ]
+        - CertificateArn: arn:aws:acm:us-west-2:957774660254:certificate/bac4265c-70a1-4116-9644-714c4565fd28
 
   HTTPSALBListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
@@ -206,7 +178,7 @@ Resources:
         - - 'TG1'
           - !Select [ 2, !Split [ '-', !GetAtt ALB.LoadBalancerName]]
       HealthCheckIntervalSeconds: 10
-      HealthCheckPath: !Ref HealthCheckPath
+      HealthCheckPath: /api/ping
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 3
       HealthyThresholdCount: 2
@@ -231,15 +203,9 @@ Resources:
     Type: AWS::Route53::RecordSet
     DependsOn: HTTPSALBListener
     Properties:
-      HostedZoneName: !FindInMap [ Environments, !Ref Environment, HostedZone ]
+      HostedZoneName: thedragon.photo.
       Comment: !Sub "DNS name for the ${ServiceName} ALB"
-      Name: !Sub
-        - "${ServiceName}-${Environment}.${HostedZone}"
-        - {
-          ServiceName: !Ref ServiceName,
-          Environment: !Ref Environment,
-          HostedZone: !FindInMap [ Environments, !Ref Environment, HostedZone ]
-          }
+      Name: !Sub "${AWS::StackName}.thedragon.photo."
       Type: CNAME
       TTL: "60"
       ResourceRecords:
@@ -253,8 +219,8 @@ Resources:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: ECSService
     Properties:
-      MaxCapacity: !FindInMap [ Environments, !Ref Environment, ServiceMaximumTasks ]
-      MinCapacity: !FindInMap [ Environments, !Ref Environment, ServiceMinimumTasks ]
+      MaxCapacity: 2
+      MinCapacity: 1
       ResourceId: !Sub
         - "service/${ClusterName}/${ServiceName}"
         - {
@@ -341,114 +307,6 @@ Resources:
           Value: !GetAtt [ ECSService, Name ]
       ComparisonOperator: LessThanThreshold
       MetricName: CPUUtilization
-
-  ##
-  ##  Continuous Integration/Deployment
-  ##
-  Pipeline:
-    Type: AWS::CodePipeline::Pipeline
-    DependsOn: ArtifactStoreS3Bucket
-    Properties:
-      RoleArn:
-        Fn::ImportValue: !Sub "${GRPStackName}-CodePipelineRoleArn"
-      Stages:
-        -
-          Name: Source
-          Actions:
-            -
-              Name: SourceFromGithub
-              ActionTypeId:
-                Category: Source
-                Owner: ThirdParty
-                Version: 1
-                Provider: GitHub
-              OutputArtifacts:
-                -
-                  Name: !Sub "${ServiceName}-Source"
-              Configuration:
-                Owner: !Ref GitHubRepositoryOwner
-                Repo: !Ref GitHubRepositoryName
-                PollForSourceChanges: true
-                Branch: !Sub "deploy-${Environment}"
-                OAuthToken: !Ref GitHubOAuthToken
-              RunOrder: 1
-        -
-          Name: Build
-          Actions:
-            -
-              Name: BuildSource
-              InputArtifacts:
-                -
-                  Name: !Sub "${ServiceName}-Source"
-              OutputArtifacts:
-                -
-                  Name: imagedefinitions
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref CodeBuildProject
-              RunOrder: 1
-        -
-          Name: Deploy
-          Actions:
-            -
-              Name: DeployAction
-              InputArtifacts:
-                -
-                  Name: imagedefinitions
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Version: 1
-                Provider: ECS
-              Configuration:
-                ClusterName: !Ref ECSClusterName
-                ServiceName: !GetAtt [ ECSService, Name ]
-                FileName: imagedefinitions.json
-              RunOrder: 1
-      ArtifactStore:
-        Type: S3
-        Location: !Ref ArtifactStoreS3Bucket
-
-  ArtifactStoreS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub "${ProjectName}-${ServiceName}-pipeline-artifact-store"
-      AccessControl: Private
-      VersioningConfiguration:
-        Status: Enabled
-
-  ##
-  ##  Code Build
-  ##
-  CodeBuildProject:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      ServiceRole:
-        Fn::ImportValue: !Sub "${GRPStackName}-CodeBuildRole"
-      Artifacts:
-        Type: CODEPIPELINE
-      BadgeEnabled: 'false'
-      Environment:
-        Type: LINUX_CONTAINER
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/docker:17.09.0
-      Source:
-        Type: CODEPIPELINE
-        BuildSpec: buildspec.yml
-      TimeoutInMinutes: 10
-      VpcConfig:
-        VpcId:
-          Fn::ImportValue: !Sub "${VPCStackName}-VpcId"
-        Subnets:
-          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
-          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
-          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetC"
-        SecurityGroupIds:
-          - Fn::ImportValue: !Sub "${VPCStackName}-InternalSG"
 
 
 #######################

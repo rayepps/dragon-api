@@ -4,6 +4,7 @@ from src.flask_dragon.api import FlaskDragon
 from src.common.middleware.authorize import authorize
 from src.common.middleware.catch_errors import catch_errors
 from src.common.config import Config
+from src.aws.ssm_service import SSMService
 
 from src.endpoints.upload import upload
 from src.endpoints.ping import ping
@@ -27,14 +28,13 @@ api.get('/api/ping', ping)
 
 # Add the authorize middleware - this will
 # apply to everything we add to come
-api.middleware.add(authorize)
+api.middleware.add(authorize(SSMService.get_api_key()))
 
 api.post('/api/v1/photos', upload)
 api.get('/api/v1/photos', list_all)
 api.put('/api/v1/photos/<string:id>', update)
 api.get('/api/v1/photos/<string:id>', find)
 api.delete('/api/v1/photos/<string:id>', remove)
-
 
 if __name__ == '__main__':
     api.run(host='0.0.0.0')

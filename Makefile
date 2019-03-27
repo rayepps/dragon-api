@@ -2,31 +2,18 @@ SHELL:=/bin/bash
 
 include .env
 
-KEY = $(shell aws --profile default configure get aws_access_key_id)
-SECRET = $(shell aws --profile default configure get aws_secret_access_key)
-TOKEN = $(shell aws --profile default configure get aws_session_token)
-REGION = $(shell aws --profile default configure get region)
-VERSION = $(shell cat ./version.cfg)
+#
+# Execute these commands insice the docker environment
+# e.g. commands that rely on installed libraries and etc.
+#
+.PHONY: lint test-unit test-integration
+lint test-unit test-integration:
+	docker-compose run --rm api ./tools.sh $(MAKECMDGOALS) $(MAKEFLAGS)
 
-export AWS_ACCOUNT_ID = 957774660254
-export AWS_ACCESS_KEY_ID = ${KEY}
-export AWS_SECRET_ACCESS_KEY = ${SECRET}
-export AWS_SESSION_TOKEN = ${TOKEN}
-export AWS_DEFAULT_REGION = ${REGION}
-export IMAGE_VERSION = ${VERSION}
-
-.PHONY: lint test-unit
-lint test-unit:
-	docker-compose run --rm api make -f Makefile.targets $(MAKECMDGOALS) $(MAKEFLAGS)
-
-.PHONY: build
-build:
-	docker build -t dragon-api:${IMAGE_VERSION} .
-
-.PHONY: tag
-tag:
-	docker tag dragon-api:${IMAGE_VERSION} ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/dragon-api:${IMAGE_VERSION}
-
-.PHONY: push
-push:
-	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/dragon-api:${IMAGE_VERSION}
+#
+# Execute these commands on the host machine
+# e.g. commands that themselves use docker
+#
+.PHONY: deploy set-service-host destory build tag push dynamo-setup s3-setup delete-image login ssm-setup
+deploy set-service-host destory build tag push dynamo-setup s3-setup delete-image login ssm-setup:
+	./tools.sh $(MAKECMDGOALS) $(MAKEFLAGS)

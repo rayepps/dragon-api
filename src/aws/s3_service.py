@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from src.common.config import Config
 from src.common import constants
 from src.common import validation
-from src.aws.s3 import get_s3
+from src.aws import client as aws
 
 
 class S3Service:
@@ -28,8 +28,7 @@ class S3Service:
 
         filename = secure_filename(file.filename)
 
-        s3 = get_s3(Config.exec_env)
-
+        s3 = aws.s3()
         s3.put_object(Body=file.read(), Bucket=constants.S3_BUCKET_NAME, Key=filename)
 
         full_size_photo_url = cls.generate_url(s3, filename)
@@ -39,5 +38,4 @@ class S3Service:
 
     @classmethod
     def remove_file(cls, filename):
-        s3 = get_s3(Config.exec_env)
-        s3.Object(constants.S3_BUCKET_NAME, filename).delete()
+        aws.s3().Object(constants.S3_BUCKET_NAME, filename).delete()

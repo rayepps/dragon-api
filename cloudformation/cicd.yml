@@ -1,0 +1,190 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Description: "Dragon API CICD"
+
+
+#######################
+###
+###    PARAMETERS
+###
+#######################
+Parameters:
+  Environment:
+    Type: String
+    Default: sandbox
+    AllowedValues:
+      - sandbox
+  ProjectName:
+    Description: An aribitrary name you like that describes the project this service runs under
+    Type: String
+  ServiceName:
+    Description: An arbitrary name of this service
+    Type: String
+  GitHubRepositoryOwner:
+    Description: The name of the GitHub user that owns the repo
+    Type: String
+  GitHubRepositoryName:
+    Description: The name of the GitHub repository
+    Type: String
+  GitHubOAuthToken:
+    Description: This token can be created at https://github.com/settings/tokens
+    Type: String
+  ECSClusterName:
+    Description: You need to create the ECS cluster before creating this stack. Put the cluster name here
+    Type: String
+  VPCStackName:
+    Description: The name of the vpc stack containing the vpc
+    Type: String
+  GRPStackName:
+    Description: The name of the grp stack containing the roles, policies, and security groups
+    Type: String
+
+
+
+#######################
+###
+###    MAPPINGS
+###
+#######################
+# Mappings:
+
+
+#######################
+###
+###    CONDITIONS
+###
+#######################
+# Conditions:
+
+
+#######################
+###
+###    METADATA
+###
+#######################
+# Metadata:
+
+
+#######################
+###
+###    RESOURCES
+###
+#######################
+Resources:
+
+  ##
+  ##  Continuous Integration/Deployment
+  ##
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn: ArtifactStoreS3Bucket
+    Properties:
+      RoleArn:
+        Fn::ImportValue: !Sub "${GRPStackName}-CodePipelineRoleArn"
+      Stages:
+        -
+          Name: Source
+          Actions:
+            -
+              Name: SourceFromGithub
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                -
+                  Name: !Sub "${ServiceName}-Source"
+              Configuration:
+                Owner: !Ref GitHubRepositoryOwner
+                Repo: !Ref GitHubRepositoryName
+                PollForSourceChanges: true
+                Branch: !Sub "deploy-${Environment}"
+                OAuthToken: !Ref GitHubOAuthToken
+              RunOrder: 1
+        -
+          Name: Build
+          Actions:
+            -
+              Name: BuildSource
+              InputArtifacts:
+                -
+                  Name: !Sub "${ServiceName}-Source"
+              OutputArtifacts:
+                -
+                  Name: imagedefinitions
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              RunOrder: 1
+        -
+          Name: Deploy
+          Actions:
+            -
+              Name: DeployAction
+              InputArtifacts:
+                -
+                  Name: imagedefinitions
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: ECS
+              Configuration:
+                ClusterName: !Ref ECSClusterName
+                ServiceName: !GetAtt [ ECSService, Name ]
+                FileName: imagedefinitions.json
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactStoreS3Bucket
+
+  ArtifactStoreS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-${ServiceName}-pipeline-artifact-store"
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+
+  ##
+  ##  Code Build
+  ##
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      ServiceRole:
+        Fn::ImportValue: !Sub "${GRPStackName}-CodeBuildRole"
+      Artifacts:
+        Type: CODEPIPELINE
+      BadgeEnabled: 'false'
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/docker:17.09.0
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yml
+      TimeoutInMinutes: 10
+      VpcConfig:
+        VpcId:
+          Fn::ImportValue: !Sub "${VPCStackName}-VpcId"
+        Subnets:
+          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
+          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
+          - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetC"
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub "${VPCStackName}-InternalSG"
+
+
+#######################
+###
+###    OUTPUTS
+###
+#######################
+# Outputs:

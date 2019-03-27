@@ -3,7 +3,7 @@ version: '3'
 services:
 
   ##
-  ##  Warehouse
+  ##  Dragon
   ##
   api:
     build:
@@ -32,10 +32,11 @@ services:
     ports:
       - "4569:4569"
       - "4572:4572"
+      - "4583:4583"
     environment:
-      - SERVICES=s3,dynamodb
+      - SERVICES=s3,dynamodb,ssm
 
-  dynamo_init:
+  localstack_init:
     env_file: .env
     depends_on:
       - localstack
@@ -45,18 +46,5 @@ services:
     volumes:
       - .:/usr/src/dragon-api
       - ~/.aws:/root/.aws
-    command: make -f Makefile.targets dynamo-setup
-    restart: 'no'
-
-  s3_init:
-    env_file: .env
-    depends_on:
-      - localstack
-    links:
-      - localstack:localstack
-    image: dragon-api
-    volumes:
-      - .:/usr/src/dragon-api
-      - ~/.aws:/root/.aws
-    command: make -f Makefile.targets s3-setup
+    command: make dynamo-setup && make s3-setup && make ssm-setup
     restart: 'no'

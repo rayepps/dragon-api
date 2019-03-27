@@ -1,9 +1,9 @@
 
 import uuid
 
-from src.aws.dynamo import get_dynamo
 from src.common.config import Config
 from src.common.types import JsonSerializable
+from src.aws import client as aws
 
 class Photo(JsonSerializable):
 
@@ -38,7 +38,7 @@ class Photo(JsonSerializable):
 
     @classmethod
     def table(cls):
-        return get_dynamo(Config.exec_env).Table(Photo.schema['TableName'])
+        return aws.dynamo().Table(Photo.schema['TableName'])
 
     def save(self):
 

@@ -9,6 +9,7 @@ class Config:
     s3_url = env.get('S3_URL')
     exec_env = env.get('EXEC_ENV')
     api_key = env.get('API_KEY')
+    ssm_url = env.get('SSM_URL')
 
     @classmethod
     def setup(cls):

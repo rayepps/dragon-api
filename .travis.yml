@@ -1,11 +1,11 @@
 language: python
-node_js:
-- node
-python:
-- '3.6'
 cache: pip
+python:
+  - '3.6'
+services:
+  - docker
 before_install:
-- export PATH=$PATH:$HOME/.local/bin
-- pip install -r test/requirements.txt
+  - export PATH=$PATH:$HOME/.local/bin
+  - pip install -r test/requirements.txt
 script:
-- bash ./travis.sh
+  - bash ./travis.sh
