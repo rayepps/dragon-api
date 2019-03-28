@@ -6,7 +6,7 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - $(aws ecr get-login --no-include-email --region us-west-2)
+      - make login
   build:
     commands:
       - make build

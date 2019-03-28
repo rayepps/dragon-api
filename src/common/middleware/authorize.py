@@ -1,6 +1,7 @@
 
 import sys
 import traceback
+from functools import wraps
 
 from http import HTTPStatus
 
@@ -18,6 +19,7 @@ def authorize(api_key):
 
     def wrapper(handler):
 
+        @wraps(handler)
         def require_api_key(*args, **kwargs):
             if 'x-api-key' not in request.headers:
                 raise exceptions.missing_header('x-api-key')

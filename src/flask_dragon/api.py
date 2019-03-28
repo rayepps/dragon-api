@@ -2,6 +2,7 @@
 
 from flask import Flask
 from flask_api import FlaskAPI
+from functools import wraps
 
 
 class FlaskDragon(FlaskAPI):
@@ -32,15 +33,14 @@ class FlaskDragon(FlaskAPI):
         middleware decorator - decorating the handler function in
         the middleware function
 
-        the `og_func_name` is used to save the name of the original
-        handler function and reapply it to the final wrapped function.
-        Otherwise - flask freaks out because it sees the middleware
-        funcs as the handler and they are all named the same to flask.
+        Here the `wraps` function is required. If we don't use it
+        the handler will appear to have the name of the middleware
+        function that wraps it. This will break the flask router.
+        `wrap` does the work of making sure the wrapped function
+        retains the correct metadata from the original handler.
         """
-        og_func_name = handler.__name__
         for func in reversed(self.middleware.functions):
-            handler = func(handler)
-        handler.__name__ = og_func_name
+            handler = wraps(handler)(func(handler))
         return handler
 
 class Middleware:
