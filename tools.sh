@@ -53,6 +53,11 @@ test-integration() {
   py.test --color=yes --cov-report html --cov-report term --cov=src test/integration
 }
 
+test-local-integration() {
+  export INTEGRATION_TEST_HOST="http://host.docker.internal:5000"
+  py.test --color=yes --cov-report html --cov-report term --cov=src test/integration
+}
+
 dynamo-setup() {
 	python -u util/setup_dynamo.py
 }

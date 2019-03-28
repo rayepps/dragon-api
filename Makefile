@@ -6,8 +6,8 @@ include .env
 # Execute these commands insice the docker environment
 # e.g. commands that rely on installed libraries and etc.
 #
-.PHONY: lint test-unit test-integration
-lint test-unit test-integration:
+.PHONY: lint test-unit test-integration test-local-integration
+lint test-unit test-integration test-local-integration:
 	docker-compose run --rm api ./tools.sh $(MAKECMDGOALS) $(MAKEFLAGS)
 
 #
