@@ -1,9 +1,11 @@
+"""photo model module contains the logic for handling,
+manipulating, storing, etc. photo objects"""
 
 import uuid
 
-from src.common.config import Config
 from src.common.types import JsonSerializable
 from src.aws import client as aws
+
 
 class Photo(JsonSerializable):
 
@@ -28,12 +30,12 @@ class Photo(JsonSerializable):
 
     def __init__(self, data):
         store = dict(
-            photo_id = data.get('photo_id', uuid.uuid4().hex),
-            filename = data.get('filename'),
-            title = data.get('title'),
-            photo_url = data.get('photo_url'),
-            description = data.get('description'),
-            thumbnail_url = data.get('thumbnail_url'))
+            photo_id=data.get('photo_id', uuid.uuid4().hex),
+            filename=data.get('filename'),
+            title=data.get('title'),
+            photo_url=data.get('photo_url'),
+            description=data.get('description'),
+            thumbnail_url=data.get('thumbnail_url'))
         super().__init__(store)
 
     @classmethod
@@ -48,7 +50,7 @@ class Photo(JsonSerializable):
             if val is not None and val != '':
                 data[key] = val
 
-        res = Photo.table().put_item(Item=data)
+        Photo.table().put_item(Item=data)
 
     def patch(self, patch_obj):
 
@@ -79,10 +81,10 @@ class Photo(JsonSerializable):
         return response
 
     @classmethod
-    def find(cls, id):
+    def find(cls, photo_id):
         response = Photo.table().get_item(
             Key={
-                'photo_id': id
+                'photo_id': photo_id
             })
 
         return Photo(response['Item'])

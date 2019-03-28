@@ -1,8 +1,8 @@
 """module contains custom extension of the flask api application"""
 
-from flask import Flask
-from flask_api import FlaskAPI
 from functools import wraps
+
+from flask_api import FlaskAPI
 
 
 class FlaskDragon(FlaskAPI):

@@ -1,12 +1,11 @@
+"""upload is the module that handles file
+uploads via the upload POST endpoint"""
 
 from flask import request
 
-from src.common.config import Config
 from src.common import standard
 from src.common import exceptions
-
 from src.model.photo import Photo
-
 from src.aws.s3_service import S3Service
 
 
@@ -17,11 +16,13 @@ def upload():
     description = request.form.get('description', None)
 
     if photo_file is None:
-        raise exceptions.missing_parameter('photo')
-    elif title is None:
-        raise exceptions.missing_parameter('title')
-    elif description is None:
-        raise exceptions.missing_parameter('description')
+        raise exceptions.missing_parameter.add('photo')
+
+    if title is None:
+        raise exceptions.missing_parameter.add('title')
+
+    if description is None:
+        raise exceptions.missing_parameter.add('description')
 
     s3_url, s3_thumbnail_url = S3Service.upload_file(photo_file)
 
@@ -35,4 +36,4 @@ def upload():
 
     photo.save()
 
-    return standard.response(response=photo, message="Successfully uploaded photo")
+    return standard.response(body=photo, message="Successfully uploaded photo")

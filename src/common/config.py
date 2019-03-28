@@ -1,3 +1,6 @@
+"""config module handles loading config data from
+environment, ssm, and file system and provides a
+single Config class interface to query configurations"""
 
 from os import environ as env
 
@@ -13,5 +16,5 @@ class Config:
 
     @classmethod
     def setup(cls):
-        with open('/usr/src/dragon-api/version.cfg') as f:
-            cls.version = f.read().replace('\n', '')
+        with open('/usr/src/dragon-api/version.cfg') as file:
+            cls.version = file.read().replace('\n', '')

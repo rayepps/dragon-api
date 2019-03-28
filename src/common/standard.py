@@ -1,17 +1,18 @@
-
-
+"""standard module implements methods that should be
+used to create/handle data in a standardized way across
+the api such as response object shapes"""
 
 from http import HTTPStatus
 import json
 
-from flask import Response
+from flask import Response as FlaskResponse
 
 from src.common import codes
 from src.common.types import JsonSerializable
 from src.common.config import Config
 
 
-def make_json_payload(status, code, message, response):
+def make_json_payload(status, code, message, body):
 
     payload = {
         'code': code,
@@ -19,22 +20,22 @@ def make_json_payload(status, code, message, response):
         'version': Config.version
     }
 
-    if response is not None:
-        payload['response'] = response
+    if body is not None:
+        payload['response'] = body
 
     return json.dumps(payload, default=JsonSerializable.serialize)
 
-def make_response(http_status, code, message, response):
+def make_response(http_status, code, message, body):
 
-    payload = make_json_payload(http_status, code, message, response)
+    payload = make_json_payload(http_status, code, message, body)
 
-    r = Response(response=payload, status=http_status, mimetype="application/json")
-    r.headers["Content-Type"] = "application/json; charset=utf-8"
+    res = FlaskResponse(response=payload, status=http_status, mimetype="application/json")
+    res.headers["Content-Type"] = "application/json; charset=utf-8"
 
-    return r
+    return res
 
-def response(http_status=HTTPStatus.OK, code=codes.SUCCESS, message=None, response=None):
-    return make_response(http_status, code, message, response)
+def response(http_status=HTTPStatus.OK, code=codes.SUCCESS, message=None, body=None):
+    return make_response(http_status, code, message, body)
 
-def error(http_status=HTTPStatus.INTERNAL_SERVER_ERROR, code=codes.UNKNOWN_ERROR, message=None, response=None):
-    return make_response(http_status, code, message, response)
+def error(http_status=HTTPStatus.INTERNAL_SERVER_ERROR, code=codes.UNKNOWN_ERROR, message=None, body=None):
+    return make_response(http_status, code, message, body)

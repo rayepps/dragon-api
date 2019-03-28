@@ -1,20 +1,43 @@
+# pylint: disable=invalid-name
+"""exceptions contains our custom exceptions"""
 
 from http import HTTPStatus
 
 from src.common import codes
-from src.common import constants
 
 
 class DragonException(Exception):
 
     def __init__(self, http_status, code, message):
+        super().__init__(message)
         self.http_status = http_status
         self.code = code
         self.message = message
 
+    def add(self, message):
+        """add is a chainable method that concatenates the provided
+        message onto the instances message attribute to provide more
+        information"""
+        self.message = f'{self.message}; {message}'
+        return self
 
 
-missing_parameter = lambda parameter: DragonException(HTTPStatus.BAD_REQUEST, codes.MISSING_PARAMETER_ERROR, f'Missing a required parameter: {parameter}')
-missing_header = lambda header: DragonException(HTTPStatus.BAD_REQUEST, codes.MISSING_HEADER_ERROR, f'Missing a required header: {header}')
-invalid_file_type = lambda file_type: DragonException(HTTPStatus.BAD_REQUEST, codes.INVALID_FILE_TYPE, f'Invalid file type: {file_type}. Only {constants.FILE_TYPE_WHITELIST}')
-unauthorized = DragonException(HTTPStatus.UNAUTHORIZED, codes.INVALID_API_KEY, f'Invalid api key')
+missing_parameter = DragonException(
+    http_status=HTTPStatus.BAD_REQUEST,
+    code=codes.MISSING_PARAMETER_ERROR,
+    message='Missing a required parameter')
+
+missing_header = DragonException(
+    http_status=HTTPStatus.BAD_REQUEST,
+    code=codes.MISSING_HEADER_ERROR,
+    message='Missing a required header')
+
+invalid_file_type = DragonException(
+    http_status=HTTPStatus.BAD_REQUEST,
+    code=codes.INVALID_FILE_TYPE,
+    message='Invalid file type')
+
+unauthorized = DragonException(
+    http_status=HTTPStatus.UNAUTHORIZED,
+    code=codes.INVALID_API_KEY,
+    message='Invalid api key')

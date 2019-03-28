@@ -1,10 +1,5 @@
+"""ssm service module manages fetching keys from ssm service"""
 
-import boto3
-from werkzeug.utils import secure_filename
-
-from src.common.config import Config
-from src.common import constants
-from src.common import validation
 from src.aws import client as aws
 
 

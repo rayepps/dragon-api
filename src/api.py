@@ -1,3 +1,7 @@
+"""api is the main starting point for the dragon
+service. This module does the work of importing
+all endpoint handlers and middleware and configuring
+it all on the flask application router"""
 
 from src.flask_dragon.api import FlaskDragon
 
@@ -13,28 +17,32 @@ from src.endpoints.remove import remove
 from src.endpoints.update import update
 from src.endpoints.find import find
 
-Config.setup()
 
-api = FlaskDragon("dragon-api")
+def run():
 
-# Order matters here
+    api = FlaskDragon("dragon-api")
 
-# Add the error catching middleware before
-# anything else so all else gets caught
-api.middleware.add(catch_errors)
+    # Order matters here
 
-# Add the ping handler
-api.get('/api/ping', ping)
+    # Add the error catching middleware before
+    # anything else so all else gets caught
+    api.middleware.add(catch_errors)
 
-# Add the authorize middleware - this will
-# apply to everything we add to come
-api.middleware.add(authorize(SSMService.get_api_key()))
+    # Add the ping handler
+    api.get('/api/ping', ping)
 
-api.post('/api/v1/photos', upload)
-api.get('/api/v1/photos', list_all)
-api.put('/api/v1/photos/<string:id>', update)
-api.get('/api/v1/photos/<string:id>', find)
-api.delete('/api/v1/photos/<string:id>', remove)
+    # Add the authorize middleware - this will
+    # apply to everything we add to come
+    api.middleware.add(authorize(SSMService.get_api_key()))
+
+    api.post('/api/v1/photos', upload)
+    api.get('/api/v1/photos', list_all)
+    api.put('/api/v1/photos/<string:id>', update)
+    api.get('/api/v1/photos/<string:id>', find)
+    api.delete('/api/v1/photos/<string:id>', remove)
+
+    api.run(host='0.0.0.0')
 
 if __name__ == '__main__':
-    api.run(host='0.0.0.0')
+    Config.setup()
+    run()

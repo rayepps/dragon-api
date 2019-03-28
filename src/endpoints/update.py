@@ -1,15 +1,15 @@
+"""update is the module that handles updating
+photo and metadata data via the update PUT
+endpoint"""
 
 from flask import request
 
-from src.common.config import Config
 from src.common import standard
-
 from src.model.photo import Photo
-
 from src.aws.s3_service import S3Service
 
 
-def update(id):
+def update(photo_id):
 
     patch = {}
 
@@ -17,7 +17,7 @@ def update(id):
     if photo_file is not None:
         s3_url, s3_thumbnail_url = S3Service.upload_file(photo_file)
         patch['photo_url'] = s3_url
-        pathc['thumbnail_url'] = s3_thumbnail_url
+        patch['thumbnail_url'] = s3_thumbnail_url
         patch['filename'] = photo_file.filename
 
     description = request.form.get('description', None)
@@ -28,6 +28,6 @@ def update(id):
     if title is not None:
         patch['title'] = title
 
-    photo = Photo.find(id).patch(patch)
+    photo = Photo.find(photo_id).patch(patch)
 
-    return standard.response(response=photo, message="Successfully updated photo")
+    return standard.response(body=photo, message="Successfully updated photo")
