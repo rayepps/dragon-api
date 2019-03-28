@@ -6,7 +6,7 @@ from flask import request
 
 from src.common import standard
 from src.model.photo import Photo
-from src.aws.s3_service import S3Service
+from src.aws.services import s3
 
 
 def update(photo_id):
@@ -15,9 +15,11 @@ def update(photo_id):
 
     photo_file = request.files.get('photo', None)
     if photo_file is not None:
-        s3_url, s3_thumbnail_url = S3Service.upload_file(photo_file)
+        Photo.validate_file_type(photo_file.filename)
+        s3.upload(photo_file.read(), photo_file.filename)
+        s3_url = s3.generate_url(photo_file.filename)
         patch['photo_url'] = s3_url
-        patch['thumbnail_url'] = s3_thumbnail_url
+        patch['thumbnail_url'] = s3_url
         patch['filename'] = photo_file.filename
 
     description = request.form.get('description', None)

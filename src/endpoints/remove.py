@@ -4,7 +4,7 @@ finding the specified photo and deleting
 it from the database and file storage service"""
 
 from src.common import standard
-from src.aws.s3_service import S3Service
+from src.aws.services import s3
 
 from src.model.photo import Photo
 
@@ -13,8 +13,8 @@ def remove(photo_id):
 
     photo = Photo.find(photo_id)
 
-    S3Service.remove_file(photo.store['filename'])
+    s3.remove(photo.store['filename'])
 
     photo.delete()
 
-    return standard.response(body=f'Successfully deleted photo: {id}')
+    return standard.response(body=f'Successfully deleted photo: {photo_id}')

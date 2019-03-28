@@ -3,8 +3,12 @@ manipulating, storing, etc. photo objects"""
 
 import uuid
 
+from werkzeug.utils import secure_filename
+
 from src.common.types import JsonSerializable
-from src.aws import client as aws
+from src.common import exceptions
+from src.common import constants
+from src.aws.services import dynamo, s3
 
 
 class Photo(JsonSerializable):
@@ -39,8 +43,27 @@ class Photo(JsonSerializable):
         super().__init__(store)
 
     @classmethod
+    def upload(cls, file):
+        """uploads a file to s3 (does not save it locally)
+        @param file: werkzeug.datastructures.FileStorage
+        @return str: A string with the full s3 path to the file
+        """
+
+        filename = secure_filename(file.filename)
+
+        s3.upload(data=file.read(), filename=filename)
+
+        return s3.generate_url(filename)
+
+    @classmethod
+    def validate_file_type(cls, filename):
+        is_valid = '.' in filename and filename.rsplit('.', 1)[1].lower() in constants.FILE_TYPE_WHITELIST
+        if not is_valid:
+            raise exceptions.invalid_file_type.add(filename)
+
+    @classmethod
     def table(cls):
-        return aws.dynamo().Table(Photo.schema['TableName'])
+        return Photo.schema['TableName']
 
     def save(self):
 
@@ -50,47 +73,47 @@ class Photo(JsonSerializable):
             if val is not None and val != '':
                 data[key] = val
 
-        Photo.table().put_item(Item=data)
+        dynamo.add(table_name=Photo.table(), attributes=data)
 
     def patch(self, patch_obj):
 
         patch_else_store = lambda prop: patch_obj[prop] if prop in patch_obj else self.store[prop]
 
-        response = Photo.table().update_item(
-            Key={
+        result = dynamo.update(
+            table_name=Photo.table(),
+            key={
                 'photo_id': self.store['photo_id']
             },
-            UpdateExpression="set title = :t, description = :d, photo_url = :p, thumbnail_url = :n, filename = :f",
-            ExpressionAttributeValues={
-                ':t': patch_else_store('title'),
-                ':d': patch_else_store('description'),
-                ':p': patch_else_store('photo_url'),
-                ':n': patch_else_store('thumbnail_url'),
-                ':f': patch_else_store('filename')
-            },
-            ReturnValues="UPDATED_NEW")
+            attributes={
+                'title': patch_else_store('title'),
+                'description': patch_else_store('description'),
+                'photo_url': patch_else_store('photo_url'),
+                'thumbnail_url': patch_else_store('thumbnail_url'),
+                'filename': patch_else_store('filename')
+            })
 
-        return Photo(response['Attributes'])
+        return Photo(result)
 
     def delete(self):
-        response = Photo.table().delete_item(
-            Key={
+
+        result = dynamo.delete(
+            table_name=Photo.table(),
+            key={
                 'photo_id': self.store['photo_id']
             })
 
-        return response
+        return result
 
     @classmethod
     def find(cls, photo_id):
-        response = Photo.table().get_item(
-            Key={
-                'photo_id': photo_id
-            })
+        result = dynamo.find(table_name=Photo.table(), key={
+            'photo_id': photo_id
+        })
 
-        return Photo(response['Item'])
+        return Photo(result)
 
     @classmethod
     def get_all(cls):
-        response = Photo.table().scan()
+        result = dynamo.scan(table_name=Photo.table())
 
-        return [Photo(item) for item in response['Items']]
+        return [Photo(item) for item in result]

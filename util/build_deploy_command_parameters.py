@@ -1,3 +1,8 @@
+"""This script is used to build a string containing the cloud formation
+stack parameters as key=value pairs. It reads the parameters file in the
+cloud formation directory, builds a dictonary of attribtues, and then
+updates the version with the specified version"""
+
 import sys
 import os
 import argparse

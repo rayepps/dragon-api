@@ -6,7 +6,7 @@ from flask import request
 from src.common import standard
 from src.common import exceptions
 from src.model.photo import Photo
-from src.aws.s3_service import S3Service
+from src.aws.services import s3
 
 
 def upload():
@@ -24,14 +24,17 @@ def upload():
     if description is None:
         raise exceptions.missing_parameter.add('description')
 
-    s3_url, s3_thumbnail_url = S3Service.upload_file(photo_file)
+    Photo.validate_file_type(photo_file.filename)
+
+    s3.upload(photo_file.read(), photo_file.filename)
+    s3_url = s3.generate_url(photo_file.filename)
 
     photo = Photo(dict(
         title=title,
         filename=photo_file.filename,
         description=description,
         photo_url=s3_url,
-        thumbnail_url=s3_thumbnail_url
+        thumbnail_url=s3_url
     ))
 
     photo.save()

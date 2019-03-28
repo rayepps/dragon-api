@@ -8,8 +8,8 @@ from src.common import standard
 from src.model.photo import Photo
 
 
-def find(photo_id):
+def find(id):
 
-    photo = Photo.find(photo_id)
+    photo = Photo.find(id)
 
     return standard.response(body=photo, message=f'Successfully retrieved photo: {id}')
