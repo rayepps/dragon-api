@@ -41,3 +41,5 @@ if [ "$TRAVIS_EVENT_TYPE" == "pull_request" ]; then
     destroy;
     exit 1
 else
+  exit 0
+fi
