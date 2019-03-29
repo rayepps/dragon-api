@@ -5,6 +5,9 @@ Api can currently be hit at `https://sandbox-dragon-api.greendragon.pro`. Contac
 
 *api key* = `4a7bdfb5cfb0453ebe2c3628a6edac07`
 
+### Current Build Status [![Build Status](https://travis-ci.com/rayepps/dragon-api.svg?branch=master)](https://travis-ci.com/rayepps/dragon-api)
+
+
 ### TODO
 
 - [] Setup integration tests :(
