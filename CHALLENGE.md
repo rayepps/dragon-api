@@ -1,42 +1,56 @@
+# Todo App
 
+# **Web app - Todo list**
 
-# ✍ Backend Engineer Coding Challenge
-## Goal
-To implement a photo sharing system so that anyone can upload a picture and it provides API endpoints to list/delete the photos.
+# **Goal**
 
-## Timeline
-3 hours
+Please implement a todo list app with web technologies, including HTML5, javascript, and CSS and also with a backend to persist the data and provide API endpoints to query/manipulate the data.
 
-## What we would like to see during the demo
-Backend: API endpoints to create/read/update/delete the photos.
-Frontend: not needed, this is a pure backend challenge.
+# **Timeline**
 
-## Must have features
+**3 hours**
 
-1. Upload a photo
-2. Add a title and description to the photo
-3. List all the photos, the returned data should contain urls to access thumbnail
-4. Read a specific photo, including the full picture, the title, and the description
-5. Change the title and description of the photo
-6. Delete the photo
-7. End result must be deployed on a public Cloud (Heroku, AWS, etc all have free tiers)
+# **What we would like to see during the demo**
 
-## Project prioritization
+Frontend: SPA (single page application)
 
-A person can spend one week, or even more, building a robust system for photo sharing. We are asking you to build one in a few hours. This means that you’ll need to make some trade-offs along the way. We want to understand those trade-offs (for example, maybe you chose not to have a more secure system so that you can have more time creating a easy-to-use backend APIs, please share this during your presentation).
+Backend: API endpoints to create/read/update the todo list item.
 
-## Bonus
+**Must have features**
 
-- Good API design
-- Clean code and architecture
+1. Create a new todo item
+2. List all the items
+3. Mark a specific item as complete
+4. Uncheck a complete item
+
+**Project prioritization**
+
+A person can spend one week, or even more, building a polished experience for an todo list. We are asking you to build a todo list app in a few hours. This means that you’ll need to make some trade-offs along the way. We want to understand those trade-offs (for example, maybe you chose not to have a polished UI so that you can have more time creating a better backend APIs, please share this during your presentation).
+
+**Bonus**
+
+Besides the above must-have features, you may take a look at the reference spec below and pick more features to implement to showcase your skillset.
+
+**Clean code and architecture**
 
 ## Tech. Stack
 
-You may choose any tech. stacks, languages and frameworks you want, no matter it is node.js, Golang, java, there is no limitation on this. It's OK to try something new, just let us know that you are doing so. We don't care if you use something we don't; the goal is to showcase your thinking, not your knowledge of a particular language.
+You may choose any frameworks, react.js, Vue.js or Angular.js, there is no limitation on this.
 
-You can also leverage some cloud infra. if you think that's easier, like aws, GCP, or Azure, but please do describe what you choose and the reasoning behind this.
+The same for backend, you can choose whatever tech. stack you want, though node.js is preferred. :)
 
-## Optional Bonus Tasks
+# Resources
 
-- Add the ability to search for photos based on the metadata.
-- Add unit testing.
+**Reference Spec:**
+
+[https://hexschool.github.io/THE_F2E_Design/todolist](https://hexschool.github.io/THE_F2E_Design/todolist/)
+
+**Features as bonuses:**
+
+1. Page tab for ‘My Task’, ‘In progress’, ‘Completed.’.
+2. Star an item.
+3. Edit an item.
+4. Attach file to an item.
+5. Add deadline to an item.
+6. Add comments to an item.
+7. …
