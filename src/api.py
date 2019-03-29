@@ -39,9 +39,9 @@ def run():
 
     api.post('/api/v1/photos', upload)
     api.get('/api/v1/photos', list_all)
-    api.put('/api/v1/photos/<string:id>', update)
-    api.get('/api/v1/photos/<string:id>', find)
-    api.delete('/api/v1/photos/<string:id>', remove)
+    api.put('/api/v1/photos/<string:photo_id>', update)
+    api.get('/api/v1/photos/<string:photo_id>', find)
+    api.delete('/api/v1/photos/<string:photo_id>', remove)
 
     api.run(host='0.0.0.0')
 

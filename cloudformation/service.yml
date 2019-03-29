@@ -152,7 +152,7 @@ Resources:
       Port: '443'
       Protocol: HTTPS
       Certificates:
-        - CertificateArn: arn:aws:acm:us-west-2:957774660254:certificate/bac4265c-70a1-4116-9644-714c4565fd28
+        - CertificateArn: arn:aws:acm:us-west-2:957774660254:certificate/03926105-9ca8-464a-beba-de3e1fa6541a
 
   HTTPSALBListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
@@ -203,9 +203,9 @@ Resources:
     Type: AWS::Route53::RecordSet
     DependsOn: HTTPSALBListener
     Properties:
-      HostedZoneName: thedragon.photo.
+      HostedZoneName: greendragon.pro.
       Comment: !Sub "DNS name for the ${ServiceName} ALB"
-      Name: !Sub "${AWS::StackName}.thedragon.photo."
+      Name: !Sub "${AWS::StackName}.greendragon.pro."
       Type: CNAME
       TTL: "60"
       ResourceRecords:
