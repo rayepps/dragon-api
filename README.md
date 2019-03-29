@@ -3,6 +3,8 @@
 
 Api can currently be hit at `https://sandbox-dragon-api.greendragon.pro`. Contact me to request an api key for access. If you need help creating the proper request to interact with the api import the `postman.json` file to postman and use the template requests provided.
 
+*api key* = `4a7bdfb5cfb0453ebe2c3628a6edac07`
+
 ### TODO
 
 - [] Setup integration tests :(
