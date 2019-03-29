@@ -3,12 +3,10 @@ manipulating, storing, etc. todo objects"""
 
 import uuid
 
-from werkzeug.utils import secure_filename
-
 from src.common.types import JsonSerializable
 from src.common import exceptions
 from src.common import constants
-from src.aws.services import dynamo, s3
+from src.aws.services import dynamo
 
 
 class Todo(JsonSerializable):
@@ -40,19 +38,6 @@ class Todo(JsonSerializable):
             deadline=data.get('deadline'),
             file_url=data.get('file_url'))
         super().__init__(store)
-
-    @classmethod
-    def upload(cls, file):
-        """uploads a file to s3 (does not save it locally)
-        @param file: werkzeug.datastructures.FileStorage
-        @return str: A string with the full s3 path to the file
-        """
-
-        filename = secure_filename(file.filename)
-
-        s3.upload(data=file.read(), filename=filename)
-
-        return s3.generate_url(filename)
 
     @classmethod
     def validate_file_type(cls, filename):
