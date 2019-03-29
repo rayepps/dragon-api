@@ -37,7 +37,8 @@ class Todo(JsonSerializable):
             todo_id=data.get('todo_id', uuid.uuid4().hex),
             is_starred=data.get('is_starred'),
             title=data.get('title'),
-            deadline=data.get('deadline'))
+            deadline=data.get('deadline'),
+            file_url=data.get('file_url'))
         super().__init__(store)
 
     @classmethod
@@ -85,7 +86,8 @@ class Todo(JsonSerializable):
             attributes={
                 'title': patch_else_store('title'),
                 'is_starred': patch_else_store('is_starred'),
-                'deadline': patch_else_store('deadline')
+                'deadline': patch_else_store('deadline'),
+                'file_url': patch_else_store('file_url')
             })
 
         return Todo(result)
