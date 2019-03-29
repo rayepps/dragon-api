@@ -17,6 +17,7 @@ from src.endpoints.remove import remove
 from src.endpoints.update import update
 from src.endpoints.find import find
 from src.endpoints.attach import attach
+from src.endpoints.detatch import detatch
 
 
 def run():
@@ -43,7 +44,10 @@ def run():
     api.put('/api/v1/todos/<string:todo_id>', update)
     api.get('/api/v1/todos/<string:todo_id>', find)
     api.delete('/api/v1/todos/<string:todo_id>', remove)
-    api.put('/api/v1/todos/<string:todo_id>/attach', attach)
+
+    api.post('/api/v1/todos/<string:todo_id>/attach', attach)
+    api.delete('/api/v1/todos/<string:todo_id>/detatch', detatch)
+
 
     api.run(host='0.0.0.0')
 

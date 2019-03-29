@@ -24,6 +24,8 @@ def attach(todo_id):
     s3.upload(file.read(), filename)
     s3_url = s3.generate_url(filename)
 
-    todo = Todo.find(todo_id).patch(dict(file_url=s3_url))
+    todo = Todo.find(todo_id).patch(dict(attachment=dict(
+        s3_url=s3_url,
+        filename=filename)))
 
     return standard.response(body=todo, message="Successfully attached file to todo")

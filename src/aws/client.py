@@ -9,8 +9,8 @@ from src.common.config import Config
 
 def s3():
     if Config.exec_env == 'local':
-        return boto3.client('s3', endpoint_url=Config.s3_url)
-    return boto3.client('s3')
+        return boto3.resource('s3', endpoint_url=Config.s3_url)
+    return boto3.resource('s3')
 
 def ssm():
     if Config.exec_env == 'local':
