@@ -1,5 +1,5 @@
-"""photo model module contains the logic for handling,
-manipulating, storing, etc. photo objects"""
+"""todo model module contains the logic for handling,
+manipulating, storing, etc. todo objects"""
 
 import uuid
 
@@ -11,19 +11,19 @@ from src.common import constants
 from src.aws.services import dynamo, s3
 
 
-class Photo(JsonSerializable):
+class Todo(JsonSerializable):
 
     schema = dict(
-        TableName='dragon-photos',
+        TableName='dragon-todos',
         KeySchema=[
             {
-                'AttributeName': 'photo_id',
+                'AttributeName': 'todo_id',
                 'KeyType': 'HASH'
             }
         ],
         AttributeDefinitions=[
             {
-                'AttributeName': 'photo_id',
+                'AttributeName': 'todo_id',
                 'AttributeType': 'S'
             }
         ],
@@ -34,12 +34,10 @@ class Photo(JsonSerializable):
 
     def __init__(self, data):
         store = dict(
-            photo_id=data.get('photo_id', uuid.uuid4().hex),
-            filename=data.get('filename'),
+            todo_id=data.get('todo_id', uuid.uuid4().hex),
+            is_starred=data.get('is_starred'),
             title=data.get('title'),
-            photo_url=data.get('photo_url'),
-            description=data.get('description'),
-            thumbnail_url=data.get('thumbnail_url'))
+            deadline=data.get('deadline'))
         super().__init__(store)
 
     @classmethod
@@ -63,7 +61,7 @@ class Photo(JsonSerializable):
 
     @classmethod
     def table(cls):
-        return Photo.schema['TableName']
+        return Todo.schema['TableName']
 
     def save(self):
 
@@ -73,47 +71,45 @@ class Photo(JsonSerializable):
             if val is not None and val != '':
                 data[key] = val
 
-        dynamo.add(table_name=Photo.table(), attributes=data)
+        dynamo.add(table_name=Todo.table(), attributes=data)
 
     def patch(self, patch_obj):
 
         patch_else_store = lambda prop: patch_obj[prop] if prop in patch_obj else self.store[prop]
 
         result = dynamo.update(
-            table_name=Photo.table(),
+            table_name=Todo.table(),
             key={
-                'photo_id': self.store['photo_id']
+                'todo_id': self.store['todo_id']
             },
             attributes={
                 'title': patch_else_store('title'),
-                'description': patch_else_store('description'),
-                'photo_url': patch_else_store('photo_url'),
-                'thumbnail_url': patch_else_store('thumbnail_url'),
-                'filename': patch_else_store('filename')
+                'is_starred': patch_else_store('is_starred'),
+                'deadline': patch_else_store('deadline')
             })
 
-        return Photo(result)
+        return Todo(result)
 
     def delete(self):
 
         result = dynamo.delete(
-            table_name=Photo.table(),
+            table_name=Todo.table(),
             key={
-                'photo_id': self.store['photo_id']
+                'todo_id': self.store['todo_id']
             })
 
         return result
 
     @classmethod
-    def find(cls, photo_id):
-        result = dynamo.find(table_name=Photo.table(), key={
-            'photo_id': photo_id
+    def find(cls, todo_id):
+        result = dynamo.find(table_name=Todo.table(), key={
+            'todo_id': todo_id
         })
 
-        return Photo(result)
+        return Todo(result)
 
     @classmethod
     def get_all(cls):
-        result = dynamo.scan(table_name=Photo.table())
+        result = dynamo.scan(table_name=Todo.table())
 
-        return [Photo(item) for item in result]
+        return [Todo(item) for item in result]

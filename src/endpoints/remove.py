@@ -1,20 +1,15 @@
 """remove module handles DELETE requests
 from the client and does the work of
-finding the specified photo and deleting
-it from the database and file storage service"""
+finding the specified todos and deleting
+it from the database"""
 
 from src.common import standard
-from src.aws.services import s3
 
-from src.model.photo import Photo
+from src.model.todo import Todo
 
 
-def remove(photo_id):
+def remove(todo_id):
 
-    photo = Photo.find(photo_id)
+    Todo.find(todo_id).delete()
 
-    s3.remove(photo.store['filename'])
-
-    photo.delete()
-
-    return standard.response(body=f'Successfully deleted photo: {photo_id}')
+    return standard.response(body=f'Successfully removed todo: {todo_id}')

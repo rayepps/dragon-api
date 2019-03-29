@@ -10,7 +10,7 @@ from src.common.middleware.catch_errors import catch_errors
 from src.common.config import Config
 from src.aws.services import ssm
 
-from src.endpoints.upload import upload
+from src.endpoints.create import create
 from src.endpoints.ping import ping
 from src.endpoints.list_all import list_all
 from src.endpoints.remove import remove
@@ -37,11 +37,11 @@ def run():
     authorizer = authorize(api_key)
     api.middleware.add(authorizer)
 
-    api.post('/api/v1/photos', upload)
-    api.get('/api/v1/photos', list_all)
-    api.put('/api/v1/photos/<string:photo_id>', update)
-    api.get('/api/v1/photos/<string:photo_id>', find)
-    api.delete('/api/v1/photos/<string:photo_id>', remove)
+    api.post('/api/v1/todos', create)
+    api.get('/api/v1/todos', list_all)
+    api.put('/api/v1/todos/<string:todo_id>', update)
+    api.get('/api/v1/todos/<string:todo_id>', find)
+    api.delete('/api/v1/todos/<string:todo_id>', remove)
 
     api.run(host='0.0.0.0')
 
