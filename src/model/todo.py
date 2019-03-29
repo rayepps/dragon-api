@@ -108,6 +108,9 @@ class Todo(JsonSerializable):
             'todo_id': todo_id
         })
 
+        if result is None:
+            raise exceptions.entity_not_found.add(f'todo_id: {todo_id}')
+
         return Todo(result)
 
     @classmethod

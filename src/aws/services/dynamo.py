@@ -38,7 +38,9 @@ def find(table_name, key):
     dynamo = aws.dynamo()
     table = dynamo.Table(table_name)
 
-    return table.get_item(Key=key)['Item']
+    res = table.get_item(Key=key)
+
+    return res['Item'] if 'Item' in res else None
 
 def scan(table_name):
     dynamo = aws.dynamo()

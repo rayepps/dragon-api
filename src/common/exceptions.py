@@ -41,3 +41,8 @@ unauthorized = DragonException(
     http_status=HTTPStatus.UNAUTHORIZED,
     code=codes.INVALID_API_KEY,
     message='Invalid api key')
+
+entity_not_found = DragonException(
+    http_status=HTTPStatus.BAD_REQUEST,
+    code=codes.TODO_NOT_FOUND,
+    message='The todo id could not be found')
