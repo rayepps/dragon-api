@@ -9,20 +9,26 @@
 			"name": "List",
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{api-key}}",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{url}}/api/v1/photos",
+					"raw": "{{url}}/api/v1/todos",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"photos"
+						"todos"
 					]
 				}
 			},
@@ -32,21 +38,27 @@
 			"name": "Find",
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{api-key}}",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{url}}/api/v1/photos/f7f630753cbe4cc2be38c86c2211ef90",
+					"raw": "{{url}}/api/v1/todos/7f67cf7e5e8a4f2b9cb304a57ae6847d",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"photos",
-						"f7f630753cbe4cc2be38c86c2211ef90"
+						"todos",
+						"7f67cf7e5e8a4f2b9cb304a57ae6847d"
 					]
 				}
 			},
@@ -56,21 +68,27 @@
 			"name": "Remove",
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{api-key}}",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{url}}/api/v1/photos/7abde496e2c941aa96db83d04612e699",
+					"raw": "{{url}}/api/v1/todos/70c8730b8a314f3291cad7864fd4a6d8",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"photos",
-						"7abde496e2c941aa96db83d04612e699"
+						"todos",
+						"70c8730b8a314f3291cad7864fd4a6d8"
 					]
 				}
 			},
@@ -80,73 +98,154 @@
 			"name": "Update",
 			"request": {
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{api-key}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "title",
-							"value": "Bye caly",
-							"type": "text"
-						}
-					]
+					"mode": "raw",
+					"raw": "{\n\t\"title\": \"Best todo ever x infinity\"\n}"
 				},
 				"url": {
-					"raw": "{{url}}/api/v1/photos/f7f630753cbe4cc2be38c86c2211ef90",
+					"raw": "{{url}}/api/v1/todos/554f9575a8634b4ebaa23f23298f0b7a",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"photos",
-						"f7f630753cbe4cc2be38c86c2211ef90"
+						"todos",
+						"554f9575a8634b4ebaa23f23298f0b7a"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Upload",
+			"name": "Create",
 			"request": {
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
 						"name": "Content-Type",
-						"value": "multipart/form-data",
+						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api-key}}"
 					}
 				],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "photo",
-							"type": "file",
-							"src": ""
-						},
-						{
-							"key": "title",
-							"value": "My profile pic",
-							"type": "text"
-						},
-						{
-							"key": "description",
-							"value": "The best profile pic that ever was",
-							"type": "text"
-						}
-					]
+					"mode": "raw",
+					"raw": "{\n\t\"title\": \"Clean my room\"\n}"
 				},
 				"url": {
-					"raw": "{{url}}/api/v1/photos",
+					"raw": "{{url}}/api/v1/todos",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"photos"
+						"todos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Attach",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "multipart/form-data"
+					},
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api-key}}"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": ""
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/api/v1/todos/7f67cf7e5e8a4f2b9cb304a57ae6847d/attach",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"todos",
+						"7f67cf7e5e8a4f2b9cb304a57ae6847d",
+						"attach"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Detatch",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "multipart/form-data"
+					},
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api-key}}"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": ""
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/api/v1/todos/7f67cf7e5e8a4f2b9cb304a57ae6847d/detatch",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"todos",
+						"7f67cf7e5e8a4f2b9cb304a57ae6847d",
+						"detatch"
 					]
 				}
 			},

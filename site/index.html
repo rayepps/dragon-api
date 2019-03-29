@@ -4,27 +4,104 @@
 
   <head>
 
-    <title>Green Dragon</title>
+    <title>Green Dragon Tasks</title>
 
     <meta name="description" content="">
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
 
   </head>
 
   <body>
 
-    <h1>Dragon</h1>
+    <h1>My Tasks</h1>
+
+    <div class="gd-task-list-container" data-controller="TaskListController">
 
 
 
-    <script src="js/jquery.min.js"></script>
-    <script src="js/dragon.js"></script>
-    <script type="application/javascript">
-      var dragon = new Dragon();
+    </div>
+
+
+    <script type="text/x-template" data-template-name="task">
+
+      <div class="rk-skillbar" data-skill="{{ key }}">
+        <div>
+          <div>
+            <img src="/skill_{{ key }}.png" />
+          </div>
+        </div>
+        <span>{{ name }}</span>
+      </div>
+
+      <div class="gd-task">
+
+        <div class="gd-task-header">
+          <!-- <div class="gd-task-selector">
+            <input type="checkbox" name="taskmultiselect"/>
+          </div> -->
+          <div class="gd-task-title">
+            <h2>{{ title }}</h2>
+          </div>
+          <div class="gd-task-star">
+            <i class="fa {{ star_class }}"></i>
+          </div>
+          <div class="gd-task-edit">
+            <i class="fa fa-pencil-alt"></i>
+          </div>
+        </div>
+
+        <!-- <div class="gd-task-body">
+
+          <div class="gd-task-deadline-section">
+            <input type="date" name="{{ id }}_deadline_date" />
+            <input type="text" name="{{ id }}_deadline_time" />
+          </div>
+
+          <div class="gd-task-file-section">
+
+          </div>
+
+          <div class="gd-task-comment-section">
+
+          </div>
+
+        </div> -->
+
+      </div>
+
     </script>
+
+    <!-- grab jquery -->
+    <script src="js/jquery.min.js"></script>
+
+    <!-- grab application and module logic -->
+    <script src="js/extensions.js"></script>
+    <script src="js/module.js"></script>
+    <script src="js/settings.js"></script>
+
+    <!-- grab controllers -->
+    <script src="js/controllers/task-controller.js"></script>
+    <script src="js/controllers/task-list-controller.js"></script>
+
+    <!-- grab services -->
+    <script src="js/services/dragon.js"></script>
+    <script src="js/services/template.js"></script>
+
+    <!-- run all the things -->
+    <script type="application/javascript">
+
+      window.module = new DragonModule([
+        new TemplateService(),
+        new DragonService()
+      ]);
+
+    </script>
+
   </body>
 
 </html>

@@ -3,6 +3,7 @@
 from functools import wraps
 
 from flask_api import FlaskAPI
+from flask_cors import CORS
 
 
 class FlaskDragon(FlaskAPI):
@@ -11,6 +12,7 @@ class FlaskDragon(FlaskAPI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        CORS(self)
         self.middleware = Middleware()
 
     def add_short_route(self, endpoint, handler, method):

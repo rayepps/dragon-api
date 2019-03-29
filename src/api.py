@@ -7,6 +7,7 @@ from src.flask_dragon.api import FlaskDragon
 
 from src.common.middleware.authorize import authorize
 from src.common.middleware.catch_errors import catch_errors
+from src.common.middleware.cors import cors
 from src.common.config import Config
 from src.aws.services import ssm
 
@@ -29,6 +30,8 @@ def run():
     # Add the error catching middleware before
     # anything else so all else gets caught
     api.middleware.add(catch_errors)
+
+    api.middleware.add(cors)
 
     # Add the ping handler
     api.get('/api/ping', ping)

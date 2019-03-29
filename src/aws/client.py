@@ -15,7 +15,7 @@ def s3():
 def ssm():
     if Config.exec_env == 'local':
         return boto3.client('ssm', endpoint_url=Config.ssm_url)
-    return boto3.client('ssm')
+    return boto3.client('ssm', region_name='us-west-2')
 
 def dynamo():
     if Config.exec_env == 'local':
