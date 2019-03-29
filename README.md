@@ -1,7 +1,7 @@
 # Dragon 🐉🔥
-## A service that handles images... like a dragon?
+## A service that handles todos... like a dragon?
 
-Api can currently be hit at `https://api-sandbox.thedragon.photo`. Contact me to request an api key for access. If you need help creating the proper request to interact with the api import the `postman.json` file to postman and use the template requests provided.
+Api can currently be hit at `https://sandbox-dragon-api.greendragon.pro`. Contact me to request an api key for access. If you need help creating the proper request to interact with the api import the `postman.json` file to postman and use the template requests provided.
 
 ### TODO
 
@@ -23,11 +23,13 @@ The project uses Docker to build and run locally. So long as you have the depend
 
 The api will start and be available at `localhost:5000`. The following endpoints will be available:
 
-- `POST /api/v1/photos` => Upload a new photo
-- `GET /api/v1/photos` => Get a list of all photos
-- `GET /api/v1/photos/<photo_id>` => Get a photo by id
-- `PUT /api/v1/photos/<photo_id>` => Update a photo by id
-- `DELETE /api/v1/photos/<photo_id>` => Remove a photo by id
+- `POST /api/v1/todos` => Create a new todo
+- `GET /api/v1/todos` => Get a list of all todos
+- `GET /api/v1/todos/<todo_id>` => Get a todo by id
+- `PUT /api/v1/todos/<todo_id>` => Update a todo by id
+- `DELETE /api/v1/todos/<todo_id>` => Remove a todo by id
+- `POST /api/v1/todos/<todo_id>/attach` => Add an attachent file to a todo
+- `DELETE /api/v1/todos/<todo_id>/detatch` => Remove attachment from todo
 
 ### Developing The Project Locally
 Make your changes and before pushing a feature branch run
