@@ -4,7 +4,7 @@ correct resource url"""
 
 import boto3
 
-from src.common.config import Config
+from dragon.common.config import Config
 
 
 def s3():

@@ -7,9 +7,9 @@ import json
 
 from flask import Response as FlaskResponse
 
-from src.common import codes
-from src.common.types import JsonSerializable
-from src.common.config import Config
+from dragon.common import codes
+from dragon.common.types import JsonSerializable
+from dragon.common.config import Config
 
 
 def make_json_payload(status, code, message, body):

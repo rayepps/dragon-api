@@ -1,48 +1,83 @@
 # Dragon 🐉🔥
-## A service that handles todos... like a dragon?
+A service that handles todos... like a dragon?
 
-Api can currently be hit at `https://sandbox-dragon-api.greendragon.pro`. Contact me to request an api key for access. If you need help creating the proper request to interact with the api import the `postman.json` file to postman and use the template requests provided.
+## Local Development
+To run locally simply run `docker-compose up`. This will require docker to be installed and running locally. See the tools.sh script for other project management functions. Run the script through `make`.
 
-*api key* = `4a7bdfb5cfb0453ebe2c3628a6edac07`
+## Deployment
+Run `make` deploy
 
-### Current Build Status [![Build Status](https://travis-ci.com/rayepps/dragon-api.svg?branch=master)](https://travis-ci.com/rayepps/dragon-api)
+
+## Project Structure
+There are thousands of differnt ways to organize a project. This is how I organized this one. A lot of engineers would do it differently. You can do it differently, thats ok. As long as you have _some_ organization and can articulate why you choose it your probably doing very well.
+
+```
+|-- cloudformation
+|-- site
+|-- test
+|-- util
+\-- dragon
+      |-- api.py
+      |-- endpoints
+      |     |-- attach.py
+      |     |-- create.py
+      |     |-- detatch.py
+      |     |-- find.py
+      |     |-- list_all.py
+      |     |-- ping.py
+      |     |-- remove.py
+      |     \-- update.py
+      |-- aws
+      |     |-- client.py
+      |     \-- services
+      |           |-- dynamo.py
+      |           |-- s3.py
+      |           \-- ssm.py
+      |-- model
+      |     \-- todo.py
+      |-- flask_dragon
+      |     \-- api.py
+      \-- common
+            |-- codes.py
+            |-- config.py
+            |-- constants.py
+            |-- exceptions.py
+            |-- standard.py
+            |-- types.py
+            \-- middleware
+                  |-- authorize.py
+                  |-- catch_errors.py
+                  \-- cors.py
+```
+
+## /dragon
+- all your code should be organized under this directory
+- you can name it nearly anything you want (`src`, `api_server`, `server`, `api`, or something specific to your application [`dragon`]). Consider that the name should be specific and unique so it doesn't conflict with another library you install later.
+
+## /endpoints
+- your most high level functions/classes that handle api endpoint invocations go here
+- this is a folder you should have but it could be shapped and named differently based on the framework, tooling, and architecture. For example, the `flask_restx` library uses classes called resources so when using that library this dir is typically called `resources`. This project is an api, but for applications that serve web content in flask this is commonly called `views`. The idea is always the same, when flask (or other http framework) handles an invocation to the web server the code in this directory is the first to be called.
+
+## /aws
+- this is project specific, it may not exist in your project
+- In APIs this is a pretty common directory as nearlly all modern APIs are going to rely heavily on some cloud provider
+- Even if this doesn't exist in your project the take away is valid: take logically related segments of your project and organize it into modules and submodules
+
+## /model
+- another very common module in APIs and apps. It often contains different content. The term `model` can apply to a database model, a data model, a class that contains the logic to manage an entity. Often times there might be two or three different modules named `model`.
+- in this project, this model refers to the database
+- the only model here is a `todo`. It contains a `schema` defining the shape of the database and the most fundamental methods for operating on that data.
+- note, models of this type don't contain business logic
+- engineers have preferred ways of structuring projects, frameworks, libraries, and languages all have standards for project structure and organization. It all changes over time. This project is about 2 years old and for me personally, its very out of date. The structure and organization is all still valid but if I made a new project it would look a lot different. Now, I would place this code somewhere like `dragon.database.model` just to be sure its clear the kind of model it is.
+
+## /flask_dragon
+- this is very project specific.. you can kind of just ignore it. I needed a specialized flask class for this api.
+- same take away as always... some code is logically related? module it!
+
+## /common
+- this is very very common. It takes many names: `core`, `shared`, `base` -- pretty much anything generic
+- the idea is that, you have a lot of modules that are very specific to their part of the app but here you have logic that is unspecific - it has use everywhere.
+- you can put pretty much anything here but you can almost gaurntee to find something resembling a `config`, `constants`, `errors`, or `middleware` modules. They might have different names but the general idea will be the same. These are fundamental modules pretty much all apps and APIs will need.
 
 
-### TODO
 
-- [] Setup integration tests :(
-- [] Actually write out all the unit tests :(
-- [] Please the gods of lint
-- [] Add helpful log lines
-- [] Add parameter validation for data posted in upload and update forms
-- [] Handle s3 and dynamo changes as a single transaction and roll one back when another fails so that the file storage is never out of sync with the database
-- [] Treat thumbnails like actual thumbnails and resize them and store as a second image
-- [] Add nginx (or some other gateway interface) so were not working off of the flask devlopment server
-- [] Add Travis build step that verifies the `version.cfg` has been incremented and implements semvar
-
-### Running The Project Locally
-The project uses Docker to build and run locally. So long as you have the dependencies installed (Docker and Docker Compose) you should simply need to run:
-
-- `docker-compose build`
-- `docker-compose up`
-
-The api will start and be available at `localhost:5000`. The following endpoints will be available:
-
-- `POST /api/v1/todos` => Create a new todo
-- `GET /api/v1/todos` => Get a list of all todos
-- `GET /api/v1/todos/<todo_id>` => Get a todo by id
-- `PUT /api/v1/todos/<todo_id>` => Update a todo by id
-- `DELETE /api/v1/todos/<todo_id>` => Remove a todo by id
-- `POST /api/v1/todos/<todo_id>/attach` => Add an attachent file to a todo
-- `DELETE /api/v1/todos/<todo_id>/detatch` => Remove attachment from todo
-
-### Developing The Project Locally
-Make your changes and before pushing a feature branch run
-
-- `make lint`
-- `make test-unit`
-
-both of these will be run by travis before allowing any PRs to be merged to develop.
-
-## Deploying The Service
-Deployments are setup using GitHub web hooks configured from branches named `deploy-{env}`. If you push/merge a change to the `deploy-sandbox` branch GitHub will tell AWS Code Pipeline and the pipeline will build the docker image and deploy it to the sandbox environment.

@@ -5,7 +5,7 @@ similar to a so called repository
 in the repository pattern
 """
 
-from src.aws import client as aws
+from dragon.aws import client as aws
 
 
 LETTERS = [chr(l) for l in range(97, 123)]

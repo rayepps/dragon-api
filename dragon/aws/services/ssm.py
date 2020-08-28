@@ -1,6 +1,6 @@
 """ssm service module manages fetching keys from ssm service"""
 
-from src.aws import client as aws
+from dragon.aws import client as aws
 
 
 def get(name):

@@ -1,7 +1,7 @@
 """s3_service manages uploading and fetching files from s3"""
 
-from src.common import constants
-from src.aws import client as aws
+from dragon.common import constants
+from dragon.aws import client as aws
 
 
 def upload(data, filename):

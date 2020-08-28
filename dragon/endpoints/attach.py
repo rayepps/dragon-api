@@ -5,10 +5,10 @@ from flask import request
 
 from werkzeug.utils import secure_filename
 
-from src.common import standard
-from src.common import exceptions
-from src.model.todo import Todo
-from src.aws.services import s3
+from dragon.common import standard
+from dragon.common import exceptions
+from dragon.model.todo import Todo
+from dragon.aws.services import s3
 
 
 def attach(todo_id):

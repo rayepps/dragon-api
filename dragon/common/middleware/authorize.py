@@ -6,7 +6,7 @@ from functools import wraps
 
 from flask import request
 
-from src.common import exceptions
+from dragon.common import exceptions
 
 
 def authorize(api_key):

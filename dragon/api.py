@@ -3,22 +3,22 @@ service. This module does the work of importing
 all endpoint handlers and middleware and configuring
 it all on the flask application router"""
 
-from src.flask_dragon.api import FlaskDragon
+from dragon.flask_dragon.api import FlaskDragon
 
-from src.common.middleware.authorize import authorize
-from src.common.middleware.catch_errors import catch_errors
-from src.common.middleware.cors import cors
-from src.common.config import Config
-from src.aws.services import ssm
+from dragon.common.middleware.authorize import authorize
+from dragon.common.middleware.catch_errors import catch_errors
+from dragon.common.middleware.cors import cors
+from dragon.common.config import Config
+from dragon.aws.services import ssm
 
-from src.endpoints.create import create
-from src.endpoints.ping import ping
-from src.endpoints.list_all import list_all
-from src.endpoints.remove import remove
-from src.endpoints.update import update
-from src.endpoints.find import find
-from src.endpoints.attach import attach
-from src.endpoints.detatch import detatch
+from dragon.endpoints.create import create
+from dragon.endpoints.ping import ping
+from dragon.endpoints.list_all import list_all
+from dragon.endpoints.remove import remove
+from dragon.endpoints.update import update
+from dragon.endpoints.find import find
+from dragon.endpoints.attach import attach
+from dragon.endpoints.detatch import detatch
 
 
 def run():

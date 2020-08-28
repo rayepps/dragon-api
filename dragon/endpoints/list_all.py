@@ -3,8 +3,8 @@ from client and does the work of fetching
 all todos from the database"""
 
 
-from src.common import standard
-from src.model.todo import Todo
+from dragon.common import standard
+from dragon.model.todo import Todo
 
 
 def list_all():

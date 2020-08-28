@@ -3,8 +3,8 @@ todos via the update PUT endpoint"""
 
 from flask import request
 
-from src.common import standard
-from src.model.todo import Todo
+from dragon.common import standard
+from dragon.model.todo import Todo
 
 
 def update(todo_id):

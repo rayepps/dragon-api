@@ -7,9 +7,9 @@ from functools import wraps
 
 from http import HTTPStatus
 
-from src.common import standard
-from src.common import codes
-from src.common import exceptions
+from dragon.common import standard
+from dragon.common import codes
+from dragon.common import exceptions
 
 
 def catch_errors(handler):

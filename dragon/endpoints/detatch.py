@@ -1,9 +1,9 @@
 """attach is the module that handles attaching
 a file to a todo via the attach PUT endpoint"""
 
-from src.common import standard
-from src.model.todo import Todo
-from src.aws.services import s3
+from dragon.common import standard
+from dragon.model.todo import Todo
+from dragon.aws.services import s3
 
 
 def detatch(todo_id):

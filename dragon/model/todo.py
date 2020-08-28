@@ -3,10 +3,10 @@ manipulating, storing, etc. todo objects"""
 
 import uuid
 
-from src.common.types import JsonSerializable
-from src.common import exceptions
-from src.common import constants
-from src.aws.services import dynamo
+from dragon.common.types import JsonSerializable
+from dragon.common import exceptions
+from dragon.common import constants
+from dragon.aws.services import dynamo
 
 
 class Todo(JsonSerializable):
