@@ -4,4 +4,4 @@ boto3==1.9.120
 Flask==1.0.2
 Flask-API==1.1
 awscli==1.16.130
-Flask-Cors==3.0.7
+Flask-Cors==3.0.9
